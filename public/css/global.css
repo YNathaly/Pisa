@@ -1,0 +1,93 @@
+.dataTables_empty{
+    display:none;
+}
+
+footer {
+   /*position: fixed;
+   left: 0;
+   bottom: 0;
+   width: 100%;
+   background-color: #444343;
+   color: white;
+   text-align: left;*/
+  background-color: #444343;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 50px;
+  color: white;
+}
+
+.footer-p {
+  margin-top: 5px;
+  margin-left: 70px;
+  margin-bottom: -0;
+  height: 30px;
+  padding-top: 5px;
+}
+
+.logo{
+    max-width: 80%;
+    padding-top: 20px;
+    padding-left: 100px;
+}
+
+/* footer on bottom */
+html{
+  min-height: 100%;
+  position: relative;
+}
+
+body{
+  margin: 0;
+  margin-bottom: 40px;
+	background-image: url('../img/home.png');/* center center no-repeat;*/
+  background-repeat: no-repeat;
+    background-attachment: scroll;
+  /*  background-position: center; */
+	background-size:100% 100%;
+}
+
+
+#main_logo{
+  width: 122px;
+  position: relative;
+  margin: 0 auto;
+  margin-top: 10px;
+}
+/*#main_logo{
+  width: 100%;
+  position: relative;
+  text-align: center;
+}*/
+
+.width-button{
+  width: 233px;
+}
+
+.block-register{
+  margin-bottom: 60px;
+}
+
+.validar-producto{
+  margin-left: 5px !important;
+}
+
+@media screen and (max-width: 600px) {
+    .footer-p{font-size:10px;}
+
+    .logo{
+      display: none;
+    }
+
+    #main_logo img{
+        width: 61px;
+        position: relative;
+        margin: 0 auto;
+        text-align: center;
+    }  
+
+    #main_logo{
+        width: 61px;
+    }
+}
