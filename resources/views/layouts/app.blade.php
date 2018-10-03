@@ -21,8 +21,9 @@
     <!--<link href="{{ asset('css/dataTables.bootstrap.min.css') }}" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/buttons/1.5.2/css/buttons.dataTables.min.css" rel="stylesheet">-->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/daterangepicker.css') }}" rel="stylesheet">
+    <!-- <link href="{{ asset('css/datepicker.css') }}" rel="stylesheet"> -->
 
 </head> 
 <body>
@@ -53,7 +54,7 @@
                         &nbsp;
                     </ul>
 
-                    <!-- Right Side Of Navbar -->
+                    <!-- Right Side Of Navbar --> 
                     <ul class="nav navbar-nav navbar-right">
                         <!-- Authentication Links -->
                         @guest
@@ -86,6 +87,7 @@
         </nav>
 
         @yield('content')
+         
 
     <footer>
       <p class="footer-p">&copy; 2017 PISA Agropecuaria. Una empresa de Grupo PISA. Todos los derechos reservados | Avisos de Privacidad.</p>
@@ -103,7 +105,14 @@
     <script src="{{ asset('js/jquery.min.js') }}"></script>
     <script src="{{ asset('js/moment.min.js') }}"></script>
     <script src="{{ asset('js/daterangepicker.min.js') }}"></script>
-    
+    <!-- <script src="{{ asset('js/datepicker.js') }}"></script>
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
+
+
+
+
     <script src="{{ asset('js/jquery.dataTables.min.js') }}"></script>
     <!--<script src="{{ asset('js/dataTables.bootstrap.min.js') }}"></script> -->
     <script src="{{ asset('js/global.js') }}"></script>

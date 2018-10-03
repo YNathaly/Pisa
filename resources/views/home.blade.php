@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('content')
   @if(Auth::user()->role_id == 1)
+   @include('partials.modal.editar')
           <div class="container">
             <div class="row">
                 <div class="col-md-12">
@@ -14,7 +15,7 @@
                                     {{ session('status') }}
                                 </div>
                             @endif
-                                 <div class="row">
+                                <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12">
                                         <div class="panel">
                                             <div class="panel-body">
@@ -30,6 +31,7 @@
                                                             <th>Descripción</th>
                                                             <th>Cantidad</th>
                                                             <th>Importe</th>
+                                                            <th>Acciones</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -46,6 +48,9 @@
                                                             <td> {{ $producto->descripcion }} </td>
                                                             <td> $ {{ $producto->cantidad }} </td>
                                                             <td> $ {{ $producto->importe }} </td>
+                                                            <td> 
+                                                                <a class="btn btn-success" id="edit_modal" data-toggle="modal" data-target="#editModal" onclick="editar_registro( '{{ $producto->id }}','{{$producto->descripcion}}' )"><span class="glyphicon glyphicon-edit"></span></a> 
+                                                            </td>
                                                             <!--<td>
                                                                  <a class="btn btn-{{ $producto->estatus == 'APROBADO' ? 'primary' : ($producto->estatus == 'PENDIENTE' ? 'success' : 'danger') }} validar-producto" id="validar-producto" data-id="{{ $producto->id }}" name="validar-producto" style="width: 130px" data-toggle="modal" data-target="#estatusModal">{{ $producto->estatus }}</a> 
                                                             </td>-->
@@ -64,7 +69,8 @@
         </div>
 
     @else
-
+  @include('partials.modal.mail')
+  @include('partials.modal.delete')
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
@@ -78,6 +84,27 @@
                                 </div>
                             @endif
 
+                            @if (Session::has('rfc_maximo'))
+                                <div class="alert alert-danger">
+                                    {{ Session::get('rfc_maximo') }}
+                                </div>
+                            @endif
+
+                            @if ($errors->any()) 
+                              <div class="alert alert-danger">
+                                  @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                  @endforeach
+                              </div>
+                            @endif
+
+                            @if (Session::has('message'))
+                              <div class="alert alert-success">
+                                  {{ Session::get('message') }}
+                              </div>
+                            @endif 
+
+
                            <div class="form-group">
                                 <label for="name" class="col-xs-12 col-sm-12 col-lg-12">{{ __('Nombre del negocio') }}</label>
                                 <p class="col-xs-12 col-sm-12 col-lg-12">{{ __($user[0]['business_name']) }}</p>
@@ -87,8 +114,13 @@
                                 <p class="col-xs-12 col-sm-12 col-lg-12">{{ __($user[0]['phone']) }}</p>
                             </div>
                             <div class="form-group">
-                                <label for="name" class="col-xs-12 col-sm-12 col-lg-12">{{ __('Dirección') }}</label>
-                                <p class="col-xs-12 col-sm-12 col-lg-12">{{ __($user[0]['address']) }}</p>
+                                <label for="name" class="col-xs-12 col-sm-4 col-lg-4">{{ __('Dirección:') }}</label>
+                                <p class="col-xs-12 col-sm-8 col-lg-8">
+                                    <br><label>Domicilio: </label>{{ __($user[0]['address']) }} 
+                                    <br><label>Colonia: </label>{{ __($user[0]['colonia']) }} 
+                                    <br><label>C.P. </label> {{ __($user[0]['postal']) }}
+                                    <br>{{ __($user[0]['city']) }} {{ __($user[0]['state']) }}
+                                </p>
                             </div>
                             <div class="form-group">
                                 <label for="name" class="col-xs-12 col-sm-12 col-lg-12">{{ __('Correo electrónico') }}</label>
@@ -99,6 +131,9 @@
                             <div class="form-group">
                                 <label for="name" class="col-xs-12 col-sm-6 col-lg-3" style="margin-top: 5px">{{ __('RFC') }}</label>
                                 <!-- <p class="col-xs-12 col-sm-12 col-lg-12">{{ __($user[0]['rfc']) }}</p> -->
+                                
+                                <a class="btn btn-primary" style="margin-left: 5px;" data-toggle="modal" data-target="#rfcModal">+</a>
+
                                 <select class="form-control col-xs-12 col-sm-6 col-lg-6" id="rfc" name="rfc" style="margin-left: 15px; width: 200px;">
                                     @foreach($rfc as $valor) 
                                          <option value="{{ $valor->id }}">{{ $valor->rfc }}</option>
@@ -109,11 +144,13 @@
 
                             <div class="form-group">
                                 <label for="name" class="col-xs-12 col-sm-12 col-lg-12">{{ __('PisaPesos') }}</label>
-                                <p class="col-xs-12 col-sm-12 col-lg-12">{{ __('$250.60') }}</p>
+                                @if(isset($pisapesos))
+                                    <div class="col-xs-12 col-sm-6 col-lg-6">Total por cliente: </div>
+                                    <div class="col-xs-12 col-sm-6 col-lg-6">{{ $pisapesos }}</div>
+                                @endif
+                                <div class="col-xs-12 col-sm-6 col-lg-6">Total por RFC: </div>
+                                <div class="col-xs-12 col-sm-6 col-lg-6" id="pisapesos">0.00</div>
                             </div>
-
-                            <!--<div class="alert alert-success">-->
-
                         </div>
                     </div>
                 </div> 
@@ -127,7 +164,7 @@
                         <div class="panel-body">
                              {!! Form::open([ 'id' => 'form-add', 'method' => 'POST', 'enctype' => 'multipart/form-data']) !!}
                                 <input type="hidden" name="_token" value="{{ csrf_token() }}"></input>
-                                <div id="errores"></div>
+                                <div id="mensajes"></div>
                                 <div style="text-align: center; margin-top: 50px;" id="factura_xml"> 
                                     <label class="btn btn-primary" style="width: 30%; background: #2a91d6;">SUBIR FACTURA 
                                         <input type="file" id="factura-xml" name="factura-xml" style="display: none">
@@ -141,14 +178,14 @@
                                 </div>
                             {!! Form::close() !!}
 
-                            <label class="title-table">Resumen de movimientos</label>
+                            <h2 class="title-table">Historial de facturas</h2>
                             <table id="factura" class="table table-striped table-bordered table-factura" style="margin-top: 50px">
                                 <thead>
                                     <tr class="tr-style">
                                         <th>Factura</th>
                                         <th>Monto de Factura</th>
-                                        <th>Boletos para Participar</th>
-                                        <th>Resumen de factura</th>
+                                        <th>Receptor</th>
+                                        <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -156,14 +193,21 @@
                                     <tr id="facturaRow{{ $factura->id }}" class="factura">
                                         <td> {{ $factura->folio }} </td>
                                         <td> $ {{ $factura->total }} </td>
-                                        <td> 3 </td>
-                                        <td><a class="btn btn-primary" style="width: 30%; background: #2a91d6;" href="{{App::make('url')->to('/')}}/factura_info/{{ $factura->id }}">ver</a> {{ $factura->fecha }}</td>
+                                        <td> {{ $factura->receptor }} </td>
+                                        <td>
+                                            <a class="btn btn-primary" style="background: #2a91d6;" href="{{App::make('url')->to('/')}}/factura_info/{{ $factura->id }}/{{ 1 }}"><span class="glyphicon glyphicon-list"></span></a>
+                                            <a class="btn btn-primary" style="background: #2a91d6;" href="{{App::make('url')->to('/')}}/factura_info/{{ $factura->id }}/{{ 2 }}
+                                            "><span class="glyphicon glyphicon-usd"></span></a> {{ $factura->fecha }}
+
+                                      
+
+                                        </td>
                                     </tr>
                                 @endforeach
                                 </tbody>
                             </table>
                             <br><br><br>
-                            <label class="title-table">Aprobados</label>
+                            <h2 class="title-table">Productos aprobados</h2>
                             <table id="aprobados" class="table table-striped table-bordered table-aprobados" style="margin-top: 50px">
                                 <thead>
                                     <tr class="tr-style">
@@ -194,7 +238,7 @@
                             </table>
                              <br><br><br>
                             <!-- Se muestran los productos que no existen dentro de la Base de Datos de PISA -->
-                            <label class="title-table">Pendientes</label>
+                            <h2 class="title-table">Productos pendientes</h2>
                             <table id="pendientes" class="table table-striped table-bordered table-pendientes" style="margin-top: 50px">
                                 <thead>
                                     <tr class="tr-style">
@@ -226,7 +270,7 @@
 
                             <br><br><br>
                             <!-- Se muestran los productos que no existen dentro de la Base de Datos de PISA -->
-                            <label class="title-table">No aprobados</label>
+                            <h2 class="title-table">Productos NO aprobados</h2>
                             <table id="no_aprobados" class="table table-striped table-bordered table-no-aprobados" style="margin-top: 50px">
                                 <thead>
                                     <tr class="tr-style">
@@ -241,7 +285,7 @@
                                 </thead>
                                 <tbody>
                                 @foreach($productos as $producto)
-                                    @if($producto->estatus == 'NO APROBADO')
+                                    @if($producto->estatus == 'NO APROBADO' && $producto->estatus_cliente !== 'DESHABILITADO')
                                         <tr id="productoRow{{ $producto->id }}" class="no_aprobados">
                                             <td> {{ $producto->no_identificacion }} </td>
                                             <td> {{ $producto->folio_factura }} </td>
@@ -249,7 +293,11 @@
                                             <td> {{ $producto->descripcion }} </td>
                                             <td> {{ $producto->cantidad }} </td>
                                             <td> $ {{ $producto->importe }} </td>
-                                            <td><a class="btn btn-primary" style="background: #2a91d6;" onclick="send_mail()">Enviar e-mail</a></td>
+                                            <td>
+                                                <a class="btn btn-primary" id="mail_modal" style="background: #2a91d6;" data-toggle="modal" data-target="#mailModal" onclick="send_mail({{$producto->id}})">SOLICITAR REVISIÓN</a>
+
+                                                <a class="btn btn-danger" id="delete_modal" data-toggle="modal" data-target="#deleteModal" onclick="deshabilitar_registro({{$producto->id}})"><span class="glyphicon glyphicon-remove"></span></a>
+                                            </td>
                                         </tr>
                                     @endif
                                 @endforeach
@@ -263,9 +311,6 @@
                     </div>
                 </div>
 
-
-
-
             </div>
 
     </div>
@@ -273,41 +318,42 @@
  @endif    
 
 
-     <!-- Status Modal
-        <div class="modal fade" id="estatusModal" tabindex="-1" role="dialog" aria-labelledby="estatusModalLabel" aria-hidden="true">
+
+     <!-- Status Modal -->
+        <div class="modal fade" id="rfcModal" tabindex="-1" role="dialog" aria-labelledby="rfcModalLabel" aria-hidden="true">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="estatusModalLabel">Acción</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
+                <h5 class="modal-title" id="rfcModalLabel">Agregar RFC</h5>
               </div>
-                  <div class="modal-body">
-                            <label>Cambiar Estatus</label>
-                            <select class="form-control" id="estatus" name="estatus">
-                              <option value="APROBADO">APROBADO</option>
-                              <option value="PENDIENTE">PENDIENTE</option>
-                              <option value="NO APROBADO">NO APROBADO</option>
-                            </select>
-                            <input type="hidden" name="identificador" id="identificador" value="">                  
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-primary aceptar_validacion" name="aceptar_validacion" id="aceptar_validacion">Validar producto</button>
-                  </div>
+                  {!! Form::open([ 'method' => 'POST', 'url' => 'agregar_rfc' ]) !!}
+                  <input type="hidden" name="_token" value="{{ csrf_token() }}"></input>
+                      <div class="modal-body">
+                            <div class="form-group">
+                                <p>RFC: </p>
+                                <input class="form-control" type="text" name="rfc" id="rfc">                  
+                            </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Agregar</button>
+                      </div> 
+                  {!! Form::close() !!}
             </div>
           </div>
-        </div>-->
+        </div>
 
           <!-- Reporte Modal -->
         <div class="modal fade" id="reporteModal" tabindex="-1" role="dialog" aria-labelledby="estatusModalLabel" aria-hidden="true">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
               <div class="modal-header">
-                <h5 class="modal-title" id="reporteModalLabel">Reporte</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
                 </button>
+                <h5 class="modal-title" id="reporteModalLabel">Reporte</h5>
               </div>
            
                 <form  id="imprimir_reporte" name="imprimir_reporte" method="POST" action="{{ url('imprimir_reporte') }}">

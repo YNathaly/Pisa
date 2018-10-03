@@ -9,8 +9,13 @@
             <div class="panel panel-default" style="margin-top: 50px;">
                 <div class="panel-heading">ACCEDE A TU CUENTA</div>
 
-
-
+                <?php if(isset($message)): ?>
+                <div class="alert alert-success">
+                     <span class="help-block">
+                        <strong><?php echo e($message); ?></strong>
+                    </span>
+                </div>
+                <?php endif; ?>
 
                 <div class="panel-body">
                     <form class="form-horizontal" method="POST" action="<?php echo e(route('login')); ?>">

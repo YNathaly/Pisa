@@ -34,11 +34,11 @@ class HomeController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(){
-      if(Auth::user()->id == '12'){
+      if(Auth::user()->id == '2'){
         //Se envian todas las facturas que pertenecen a ese cliente.
         $facturas = Facturas::select('*')->get();
         $productos = Productos::select('*')->get();
-        $user = User::select('business_name', 'phone', 'address', 'email', 'rfc')->where('id', Auth::user()->id)->get();
+        $user = User::select('business_name', 'phone', 'address', 'state', 'city', 'colonia', 'postal', 'email', 'rfc')->where('id', Auth::user()->id)->get();
 
         return view('home')->with(['facturas' => $facturas, 'productos' => $productos]);
 
@@ -48,11 +48,21 @@ class HomeController extends Controller
         $facturas = Facturas::select('*')->where('email', Auth::user()->email)->get();
         // echo '<pre>';var_dump($facturas);exit(); echo '</pre>';
         $productos = Productos::select('*')->where('email', Auth::user()->email)->get();
-        $user = User::select('business_name', 'phone', 'address', 'email', 'rfc')->where('id', Auth::user()->id)->get();
-        $rfc = User::select('id','rfc')->where('email', Auth::user()->email)->get();
-         //echo '<pre>'; var_dump($valor->rfc); echo '</pre>';  
+        $user = User::select('business_name', 'phone', 'address', 'state', 'city', 'colonia', 'postal', 'email', 'rfc')->where('id', Auth::user()->id)->get();
+        $rfc = DB::table('rfc_user')->select('id','rfc')->where('user_id', Auth::user()->id )->get();
+        $pisapesos = Productos::select(DB::raw('SUM(importe) as importe') )->where('id_user', Auth::user()->id )->where('estatus', 'APROBADO')->get();
+        $pisa_pesos = number_format($pisapesos[0]->importe, 2);
+      
+        //calcular pisapesos por factura
+        /*$facturas = Facturas::select(DB::raw('ROUND(SUM(importe),2) AS pisapesos'), 'facturas.*')
+          ->join('producto', 'facturas.id', 'producto.id_factura')
+          ->where('producto.estatus', 'APROBADO')
+          ->where('producto.email', Auth::user()->email)
+          ->groupBy*/
 
-        return view('home')->with(['facturas' => $facturas, 'productos' => $productos, 'user' => $user, 'rfc' => $rfc]);
+      //$facturas1 = Facturas::select('facturas.*')->get(); 
+      // echo '<pre>'; var_dump($facturas); echo '</pre>';  
+        return view('home')->with(['facturas' => $facturas, 'productos' => $productos, 'user' => $user, 'rfc' => $rfc, 'pisapesos' => $pisa_pesos ]);
       }
     }
 
@@ -110,11 +120,19 @@ class HomeController extends Controller
                                     'errors'=> 'Su Factura con Folio ' . strval( $comprobante['Folio'] ) .' esta cancelada o no es valida.'
                                 ));
                         }
+
+                        $emisor = $comprobante->xpath('//cfdi:Emisor');
+                        $receptor = $comprobante->xpath('//cfdi:Receptor');
                         //Se genera el registro de la factura
                         $factura_data = DB::table('facturas')->insertGetId([
                             'id_user' => Auth::user()->id,
+                            'id_rfc' => $request->id_rfc,
                             'email' => Auth::user()->email,
                             'folio' => strval( $comprobante['Folio'] ),
+                            'emisor' => strval( $emisor[0]['Nombre'] ),
+                            'rfc_emisor' => strval( $receptor[0]['Rfc'] ),
+                            'receptor' => strval( $receptor[0]['Nombre'] ),
+                            'rfc_receptor' => strval( $receptor[0]['Rfc'] ),
                             'subtotal' => strval( $comprobante['SubTotal'] ),
                             'total' => strval( $comprobante['Total'] ),
                             'descuento' => strval( $comprobante['Descuento'] ) != null ?  strval( $comprobante['Descuento'] )  : '0.00',
@@ -149,6 +167,7 @@ class HomeController extends Controller
                                           'folio_factura' => strval( $comprobante['Folio'] ) != null ?strval( $comprobante['Folio'] ) : '',
                                           'id_factura' => $factura_data,
                                           'id_user' => Auth::user()->id,
+                                          'id_rfc' => $request->id_rfc,
                                           'email' => Auth::user()->email,
                                           'unidad' => strval($concepto['Unidad']) != null ? strval($concepto['Unidad']) : '',
                                           'clave_unidad' => strval($concepto['ClaveUnidad']) != null ? strval($concepto['ClaveUnidad']) : '',
@@ -196,29 +215,40 @@ class HomeController extends Controller
     //Client perfil
     public function filtro_rfc(Request $request){
 
-        $facturas = Facturas::select('*')->where('id_user', $request->id)->get();
-        $productos = Productos::select('*')->where('id_user', $request->id)->get();
+       // $facturas = Facturas::select('*')->where('id_rfc', $request->id)->where('id_user', Auth::user()->id )->get();
+        $productos = Productos::select('*')->where('id_rfc', $request->id)->where('id_user', Auth::user()->id )->get();
+        $pisapesos = Productos::select(DB::raw('SUM(importe) as importe') )->where('id_rfc', $request->id)->where('id_user', Auth::user()->id )->where('estatus', 'APROBADO')->get();
+        $pisa_pesos = number_format($pisapesos[0]->importe, 2);
+        //calcular pisapesos por factura
+        $facturas = Facturas::select(DB::raw('ROUND(SUM(importe),2) AS pisapesos'), 'facturas.*')
+          ->join('producto', 'facturas.id', 'producto.id_factura')
+          ->where('producto.estatus', 'APROBADO')
+          ->where('facturas.id_rfc', $request->id)
+          ->where('facturas.id_user', Auth::user()->id )
+          ->where('producto.email', Auth::user()->email)
+          ->groupBy('facturas.id')
+          ->get(); 
 
         return response()->json([
             'facturas' => $facturas,
-            'productos' => $productos
+            'productos' => $productos,
+            'pisapesos' => $pisa_pesos
         ]);  
     }
 
-    public function factura_info( $id ){ 
-        $facturas = Facturas::select('*')->where('id', $id)->get()->toArray();
+    public function factura_info( $id, $accion ){ 
+
+       // $facturas = Facturas::select('*')->where('id', $id)->get()->toArray();
+        $facturas = Facturas::select(DB::raw('ROUND(SUM(importe),2) AS pisapesos'), 'facturas.*')
+          ->join('producto', 'facturas.id', 'producto.id_factura')
+          ->where('producto.estatus', 'APROBADO')
+          ->where('facturas.id', $id)
+          ->groupBy('facturas.id')
+          ->get(); 
+
         $productos = Productos::select('*')->where('id_factura', $id)->get()->toArray();
 
-        /*foreach ($productos as $value) {
-         echo '<pre>'; var_export($value['no_identificacion']); echo '</pre>';
-
-        }exit();*/
-        $data = [ 
-            'facturas' => $facturas,
-            'productos' => $productos 
-          ];
-
-        return view('factura_info', $data);
+        return view('factura_info')->with([ 'facturas' => $facturas, 'productos' => $productos, 'accion' => $accion ]);  
     }
 
      //Admin perfil
@@ -248,7 +278,7 @@ class HomeController extends Controller
         return $data; 
     }
 
-     public function imprimir_reporte(Request $request){
+    public function imprimir_reporte(Request $request){
        // if($request->ajax() && $request->isMethod('POST'))
           // Se cambia el formato de fecha que viene desde el cliente.
           $fecha = explode(' - ', $request->daterange);
@@ -257,6 +287,11 @@ class HomeController extends Controller
           $date_to = date("Y/m/d", strtotime($fecha[1]));
 
           $infoFormato = array();
+
+          $facturas = Facturas::select('facturas.id', 'facturas.id_user', 'facturas.email', 'facturas.folio', 'facturas.subtotal', 'facturas.total', 'facturas.descuento', 'facturas.moneda', 'facturas.metodo_pago', 'facturas.lugar_expedicion', 'facturas.fecha')
+                   ->whereBetween('fecha', [ $date_from, $date_to ])
+                   ->groupBy('facturas.id')->get()->toArray();
+
           $infoFormato = Facturas::select('facturas.id', 'facturas.id_user', 'facturas.email', 'facturas.folio', 'facturas.subtotal', 'facturas.total', 'facturas.descuento', 'facturas.moneda', 'facturas.metodo_pago', 'facturas.lugar_expedicion', 'facturas.fecha',
                     'prod.id','prod.no_identificacion', 'prod.unidad', 'prod.clave_unidad', 'prod.clave_prod_ser', 'prod.descripcion', 'prod.cantidad', 'prod.descuento', 'prod.importe', 'prod.valor_unitario', 'prod.estatus','pro_imp.base_traslado', 'pro_imp.impuesto_traslado', 'pro_imp.tipo_factor_traslado', 'pro_imp.tasa_cuota_traslado', 'pro_imp.importe_traslado')
                    ->join('producto as prod', 'facturas.id', '=', 'prod.id_factura')
@@ -266,10 +301,127 @@ class HomeController extends Controller
   
           /*$pdf = PDF::loadView('partials.pdf.reporte', $infoFormato);
           echo utf8_encode( $pdf->stream() );*/
+          
 
-          $pdf = PDF::loadView('partials.pdf.reporte', ['infoFormato' => $infoFormato]);
-          return $pdf->stream();  
-     }
+          $pdf = PDF::loadView('partials.pdf.reporte', ['infoFormato' => $infoFormato, 'facturas' => $facturas]);
+          return $pdf->stream();
+    }
+
+    public function agregar_rfc(Request $request){
+    /* 
+      Validaciones:
+      Campo Requerido
+      Si ya hay mas de dos frc con el mismo id enviar un error a la vista
+      Validación de numero de caracteres en el rfc
+      RFC unico
+    */ 
+            $rules = array(
+              'rfc' => 'required|unique:rfc_user|min:12|max:13'
+            );
+
+            $messages = array(
+              'rfc.required' => 'El campo rfc es obligatorio',
+              'rfc.min'      => 'El minimo permitido son 12 caracteres',
+              'rfc.max'      => 'El maximo permitido son 13 caracteres',
+              'rfc.unique'   => 'El campo rfc debe ser unico'
+            );
+
+            $validator = Validator::make($request->all(), $rules, $messages);
+
+          if ($validator->fails()) {
+              return redirect('home')
+                        ->withErrors($validator)
+                        ->withInput();
+          }
+
+          if( DB::table('rfc_user')->where('user_id', '=', Auth::user()->id)->count() >= 3 )
+          {
+            return redirect('/home')->with('rfc_maximo', 'Limite de RFC registrados.');
+          }else{
+
+            $insert = DB::table('rfc_user')->insertGetId([
+              'user_id' => Auth::user()->id, 
+              'rfc' => $request->rfc
+            ]);
+
+          return redirect('/home')->with('message','Servicio dado de alta correctamente');
+
+
+      }
+
+    }
+
+
+    public function send_mail(Request $request){
+      //Enviar correo con los datos del producto a validar
+      $product_info = Productos::select('*')->where('id', '=', $request->product_id )->get()->toArray();
+      $producto = $product_info[0]['no_identificacion'];
+
+      $mensaje = "Folio de Factura: " . $product_info[0]['folio_factura']. "\r\n";
+      $mensaje .= "No Identificacion: " . $product_info[0]['no_identificacion'] . "\r\n";
+      $mensaje .= "Unidad: " . $product_info[0]['unidad'] . " \r\n";
+      $mensaje .= "Descripcion: " . $product_info[0]['descripcion'] . "\r\n";
+      $mensaje .= "Cantidad: " . $product_info[0]['cantidad'] . " \r\n";
+      $mensaje .= "Descuento: " . $product_info[0]['descuento'] . " \r\n";
+      $mensaje .= "Importe: " . $product_info[0]['importe'] . " \r\n";
+      $mensaje .= "Valor Unitario: " . $product_info[0]['valor_unitario'] . " \r\n";
+      $mensaje .= "Comentario: " .  $request->mensaje . " \r\n";
+
+      $to  = 'ncedeno@mindgroup.mx';//
+      $subject = 'Mensaje de '.  Auth::user()->name;
+
+      // To send HTML mail, the Content-type header must be set
+      $header = 'Mime-Version: 1.0 \r\n';
+      $header .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+      $header .= 'To: Contacto Pisa Agropecuaria <validaproducto@pisaagropecuaria.com>, Contacto <validaproducto@pisaagropecuaria.com>' . "\r\n";
+      $header .= 'From:'. Auth::user()->name.'<'.Auth::user()->email.'>' . "\r\n";
+      $header .= "X-Mailer: PHP/" . phpversion() . " \r\n";
+
+      $mail = mail($to, $subject, $mensaje, $header);
+      echo $mail;
+
+    }
+
+  //Deshabilita el registro de Usuario, para que ya no lo muestre dentro del listado de productos no aprobados.
+    public function eliminar(Request $request){
+      $product =  DB::table('producto')->where('id', '=', $request->id_registro )->get();
+
+          if( isset( $product[0] ) && ( $product[0] != null ) ){
+              $status_change = DB::table('producto') 
+                  ->where('id', '=', $request->id_registro)
+                  ->update(['estatus_cliente' => 'DESHABILITADO']);
+          }
+
+          $data = [ 
+            'success' => 'true', 
+            'message' => 'Producto ' . $product[0]->no_identificacion . ' eliminado correctamente.' 
+            ];
+
+        return $data; 
+      
+    }
+
+    //Edición de descripción de producto, dentro del listado de productos como Administrador.
+    public function editar(Request $request){
+
+      $product =  DB::table('producto')->where('id', '=', $request->id_registro )->get();
+
+          if( isset( $product[0] ) && ( $product[0] != null ) ){
+              $status_change = DB::table('producto') 
+                  ->where('id', '=', $request->id_registro)
+                  ->update(['descripcion' =>  $request->descripcion]);
+          }
+
+          $data = [ 
+            'success' => 'true', 
+            'message' => 'Producto ' . $product[0]->no_identificacion . ' editado correctamente.' 
+            ];
+
+        return $data; 
+      
+    }
+
+
 
      
 }
