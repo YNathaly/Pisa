@@ -4,12 +4,15 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <meta http-equiv='cache-control' content='no-cache'>
+    <meta http-equiv='expires' content='0'>
+    <meta http-equiv='pragma' content='no-cache'>
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
+   
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/global.css') }}" rel="stylesheet">
@@ -24,7 +27,7 @@
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ asset('css/daterangepicker.css') }}" rel="stylesheet">
     <!-- <link href="{{ asset('css/datepicker.css') }}" rel="stylesheet"> -->
-
+ 
 </head> 
 <body>
    
@@ -68,7 +71,7 @@
 
                                 <ul class="dropdown-menu">
                                     <li>
-                                        <a href="{{ route('logout') }}"
+                                        <a id="cerrar" href="{{ route('logout') }}"
                                             onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
                                             Logout
@@ -97,31 +100,32 @@
 
     </div>
 
-    <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}"></script>
+    <!-- Scripts 
+    <script src="{{ asset('js/app.js') }}"></script>-->
     <script src="{{ asset('js/jquery-3.3.1.js') }}"></script>
-    
+
     <!-- Librerias para datarangepicker -->
     <script src="{{ asset('js/jquery.min.js') }}"></script>
     <script src="{{ asset('js/moment.min.js') }}"></script>
     <script src="{{ asset('js/daterangepicker.min.js') }}"></script>
-    <!-- <script src="{{ asset('js/datepicker.js') }}"></script>
+    <script src="{{ asset('js/bootstrap.min.js') }}"></script>
+   <!-- <script src="{{ asset('js/bootstrap.min.js') }}"></script>
+     <script src="{{ asset('js/datepicker.js') }}"></script>
 
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
 
-
-
-
     <script src="{{ asset('js/jquery.dataTables.min.js') }}"></script>
-    <!--<script src="{{ asset('js/dataTables.bootstrap.min.js') }}"></script> -->
+    
+    <!-- <script src="{{ asset('js/dataTables.bootstrap.min.js') }}"></script> -->
+
     <script src="{{ asset('js/global.js') }}"></script>
     <script src="{{ asset('js/dataTables.buttons.min.js') }}"></script>
+    
     <script src="{{ asset('js/jszip.min.js') }}"></script>
     <script src="{{ asset('js/pdfmake.min.js') }}"></script>
     <script src="{{ asset('js/vfs_fonts.js') }}"></script>
-    <script src="{{ asset('js/buttons.html5.min.js') }}"></script>
-
+    <script src="{{ asset('js/buttons.html5.min.js') }}"></script> 
     
 
 </body>

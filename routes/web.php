@@ -21,6 +21,8 @@ Auth::routes();
 
 
 Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/producto/{id}', 'ProductoController@index');
+
 Route::post('/validacion', 'HomeController@validacion'); 
 Route::post('/validacion-producto', 'HomeController@validacion_producto'); 
 Route::post('/filtro-rfc', 'HomeController@filtro_rfc');
@@ -31,6 +33,10 @@ Route::post('/editar', 'HomeController@editar');
 Route::get('/factura_info/{id}/{accion}', 'HomeController@factura_info');
 //Route::post('/invoice ', 'HomeController@invoice');
 Route::post('/imprimir_reporte', 'HomeController@imprimir_reporte');
+Route::post('/clientes', 'HomeController@clientes');
+Route::post('/reporte_general', 'HomeController@reporte_general');
+
+
 Route::post('/send_mail', 'HomeController@send_mail');
 //Route::get('/imprimir-reporte/{fecha}/{estatus}', 'HomeController@imprimir_reporte');
 

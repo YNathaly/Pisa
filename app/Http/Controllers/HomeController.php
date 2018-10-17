@@ -7,6 +7,7 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Redirect;
 
 use App\Facturas\Facturas;
 use App\Facturas\Productos;
@@ -48,6 +49,19 @@ class HomeController extends Controller
         $facturas = Facturas::select('*')->where('email', Auth::user()->email)->get();
         // echo '<pre>';var_dump($facturas);exit(); echo '</pre>';
         $productos = Productos::select('*')->where('email', Auth::user()->email)->get();
+
+        //arrego para mostrar productos aprobados en pop up
+        $prod_date = Productos::select('created_at')->where('email', Auth::user()->email)->orderBy('created_at','DESC')->limit(1)->get()->toArray();
+        $date = explode(" ", $prod_date[0]["created_at"]);
+        $prod_popup = Productos::select('*')->where('email', Auth::user()->email)->where( 'estatus', 'APROBADO' )->where( 'created_at', 'LIKE',  $date[0].'%' )->get()->toArray();
+
+        if( $prod_popup != '' ){
+            $prod_popup = $prod_popup;
+        }else{
+             $prod_popup = array();
+        }
+// var_dump($prod_popup);exit();
+
         $user = User::select('business_name', 'phone', 'address', 'state', 'city', 'colonia', 'postal', 'email', 'rfc')->where('id', Auth::user()->id)->get();
         $rfc = DB::table('rfc_user')->select('id','rfc')->where('user_id', Auth::user()->id )->get();
         $pisapesos = Productos::select(DB::raw('SUM(importe) as importe') )->where('id_user', Auth::user()->id )->where('estatus', 'APROBADO')->get();
@@ -62,7 +76,7 @@ class HomeController extends Controller
 
       //$facturas1 = Facturas::select('facturas.*')->get(); 
       // echo '<pre>'; var_dump($facturas); echo '</pre>';  
-        return view('home')->with(['facturas' => $facturas, 'productos' => $productos, 'user' => $user, 'rfc' => $rfc, 'pisapesos' => $pisa_pesos ]);
+        return view('home')->with(['facturas' => $facturas, 'productos' => $productos, 'prod_popup' => $prod_popup, 'user' => $user, 'rfc' => $rfc, 'pisapesos' => $pisa_pesos ]);
       }
     }
 
@@ -204,6 +218,7 @@ class HomeController extends Controller
                         $factura_info[] = array(
                             'folio' => strval( $comprobante['Folio'] ),
                             'fecha' => strval( $comprobante['Fecha'] ),
+                            'receptor' => strval( $receptor[0]['Nombre'] ),
                             'total' => $total
                         );
 
@@ -215,19 +230,19 @@ class HomeController extends Controller
     //Client perfil
     public function filtro_rfc(Request $request){
 
-       // $facturas = Facturas::select('*')->where('id_rfc', $request->id)->where('id_user', Auth::user()->id )->get();
+        $facturas = Facturas::select('*')->where('id_rfc', $request->id)->where('id_user', Auth::user()->id )->get();
         $productos = Productos::select('*')->where('id_rfc', $request->id)->where('id_user', Auth::user()->id )->get();
         $pisapesos = Productos::select(DB::raw('SUM(importe) as importe') )->where('id_rfc', $request->id)->where('id_user', Auth::user()->id )->where('estatus', 'APROBADO')->get();
         $pisa_pesos = number_format($pisapesos[0]->importe, 2);
         //calcular pisapesos por factura
-        $facturas = Facturas::select(DB::raw('ROUND(SUM(importe),2) AS pisapesos'), 'facturas.*')
+        /*$facturas = Facturas::select(DB::raw('ROUND(SUM(importe),2) AS pisapesos'), 'facturas.*')
           ->join('producto', 'facturas.id', 'producto.id_factura')
           ->where('producto.estatus', 'APROBADO')
           ->where('facturas.id_rfc', $request->id)
           ->where('facturas.id_user', Auth::user()->id )
           ->where('producto.email', Auth::user()->email)
           ->groupBy('facturas.id')
-          ->get(); 
+          ->get(); */
 
         return response()->json([
             'facturas' => $facturas,
@@ -298,7 +313,7 @@ class HomeController extends Controller
                    ->join('producto_impuestos as pro_imp', 'prod.id', '=', 'pro_imp.id_producto')
                    ->where('prod.estatus',  $request->estatus_reporte)
                    ->whereBetween('fecha', [ $date_from, $date_to ])->get()->toArray();
-  
+ 
           /*$pdf = PDF::loadView('partials.pdf.reporte', $infoFormato);
           echo utf8_encode( $pdf->stream() );*/
           
@@ -306,6 +321,83 @@ class HomeController extends Controller
           $pdf = PDF::loadView('partials.pdf.reporte', ['infoFormato' => $infoFormato, 'facturas' => $facturas]);
           return $pdf->stream();
     }
+
+    public function reporte_general(Request $request){
+
+        $rules = array(
+           'daterange' => 'required|string|max:255'
+        );
+        $messages = array (
+          'daterange.required' =>  'El campo fecha es obligatorio'
+        );
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails())
+        {
+          //return redirect()->back()->withErrors($validator->errors());
+          return Redirect::back()->withErrors($validator)
+                            ->withInput();
+          /*return redirect('/home')->withErrors($validator)
+                            ->withInput();*/
+        }else{
+                $fecha = explode(' - ', $request->daterange);
+                $date_from = ''; $date_to = '';   
+                $date_from = date("Y/m/d", strtotime($fecha[0]));
+                $date_to = date("Y/m/d", strtotime($fecha[1]));
+                $infoFormato = array();       
+                $facturas = array();
+               
+               
+          $facturas = Facturas::select('*')
+                   ->whereBetween('fecha', [ $date_from, $date_to ])
+                   ->groupBy('facturas.id');
+          if( $request->cliente_id != NULL ) {
+              $facturas = $facturas->where('id_user', '=', $request->cliente_id);
+          }
+          $facturas = $facturas->get()->toArray();
+
+
+          $infoFormato = Facturas::select('facturas.id', 'facturas.id_user', 'facturas.email', 'facturas.folio', 'facturas.subtotal', 'facturas.total', 'facturas.descuento', 'facturas.moneda', 'facturas.metodo_pago', 'facturas.lugar_expedicion', 'facturas.fecha',
+                    'prod.id','prod.no_identificacion', 'prod.unidad', 'prod.clave_unidad', 'prod.clave_prod_ser', 'prod.descripcion', 'prod.cantidad', 'prod.descuento', 'prod.importe', 'prod.valor_unitario', 'prod.estatus','pro_imp.base_traslado', 'pro_imp.impuesto_traslado', 'pro_imp.tipo_factor_traslado', 'pro_imp.tasa_cuota_traslado', 'pro_imp.importe_traslado')
+                   ->join('producto as prod', 'facturas.id', '=', 'prod.id_factura')
+                   ->join('producto_impuestos as pro_imp', 'prod.id', '=', 'pro_imp.id_producto')
+                   ->whereBetween('fecha', [ $date_from, $date_to ]);//->toSql();
+
+          if( $request->cliente_id != NULL ) {
+              $infoFormato = $infoFormato->where('facturas.id_user', '=', $request->cliente_id);
+          }
+          if( $request->estatus_reporte_general != 'GENERAL' ) {
+              $infoFormato = $infoFormato->where('prod.estatus', '=', $request->estatus_reporte_general );
+          }
+
+
+          $infoFormato = $infoFormato->get()->toArray();
+                   
+//var_dump($infoFormato );exit();
+
+          $user = User::select('*')->where('role_id', '2');
+          if( $request->cliente_id != NULL ) {
+              $user = $user->where('id', '=', $request->cliente_id);
+          }
+          $user = $user->get()->toArray();
+
+               $pdf = PDF::loadView('partials.pdf.general', [ 'infoFormato' => $infoFormato, 'facturas' => $facturas, 'user' => $user ]);
+                return $pdf->stream();
+
+        }
+          
+    }
+
+      public function clientes(Request $request){
+
+      $usuarios = User::select('*')->where('name','LIKE', '%'.$request->key.'%' )->get()->toArray();
+ //echo '<pre>'; var_dump($usuarios);exit(); echo '</pre>';
+        return response()->json( $usuarios );
+    }
+
+
+
 
     public function agregar_rfc(Request $request){
     /* 
@@ -344,7 +436,7 @@ class HomeController extends Controller
               'rfc' => $request->rfc
             ]);
 
-          return redirect('/home')->with('message','Servicio dado de alta correctamente');
+          return redirect('/home')->with('message','RFC dado de alta correctamente');
 
 
       }
@@ -357,6 +449,9 @@ class HomeController extends Controller
       $product_info = Productos::select('*')->where('id', '=', $request->product_id )->get()->toArray();
       $producto = $product_info[0]['no_identificacion'];
 
+      $to  = 'ncedeno@mindgroup.mx';//
+      $subject = 'Mensaje de '.  Auth::user()->name;
+
       $mensaje = "Folio de Factura: " . $product_info[0]['folio_factura']. "\r\n";
       $mensaje .= "No Identificacion: " . $product_info[0]['no_identificacion'] . "\r\n";
       $mensaje .= "Unidad: " . $product_info[0]['unidad'] . " \r\n";
@@ -366,9 +461,7 @@ class HomeController extends Controller
       $mensaje .= "Importe: " . $product_info[0]['importe'] . " \r\n";
       $mensaje .= "Valor Unitario: " . $product_info[0]['valor_unitario'] . " \r\n";
       $mensaje .= "Comentario: " .  $request->mensaje . " \r\n";
-
-      $to  = 'ncedeno@mindgroup.mx';//
-      $subject = 'Mensaje de '.  Auth::user()->name;
+      $mensaje .= 'http://pisa.net/public/producto/'.$request->product_id;
 
       // To send HTML mail, the Content-type header must be set
       $header = 'Mime-Version: 1.0 \r\n';
@@ -378,11 +471,16 @@ class HomeController extends Controller
       $header .= "X-Mailer: PHP/" . phpversion() . " \r\n";
 
       $mail = mail($to, $subject, $mensaje, $header);
+
+      $status_change = DB::table('producto') 
+                  ->where('id', '=', $request->product_id)
+                  ->update(['validacion' => 'SI']);
+
       echo $mail;
 
     }
 
-  //Deshabilita el registro de Usuario, para que ya no lo muestre dentro del listado de productos no aprobados.
+    //Deshabilita el registro de Usuario, para que ya no lo muestre dentro del listado de productos no aprobados.
     public function eliminar(Request $request){
       $product =  DB::table('producto')->where('id', '=', $request->id_registro )->get();
 
@@ -404,20 +502,39 @@ class HomeController extends Controller
     //Edición de descripción de producto, dentro del listado de productos como Administrador.
     public function editar(Request $request){
 
-      $product =  DB::table('producto')->where('id', '=', $request->id_registro )->get();
+        if ($request->descripcion == NULL)
+        {
 
-          if( isset( $product[0] ) && ( $product[0] != null ) ){
-              $status_change = DB::table('producto') 
-                  ->where('id', '=', $request->id_registro)
-                  ->update(['descripcion' =>  $request->descripcion]);
-          }
+           return response()->json(array(
+                                    'success'=>'false',
+                                    'errors'=> 'El campo descripción de producto es obligatorio'
+                                ));
+        }else{
 
-          $data = [ 
-            'success' => 'true', 
-            'message' => 'Producto ' . $product[0]->no_identificacion . ' editado correctamente.' 
-            ];
 
-        return $data; 
+        $product =  DB::table('producto')->where('id', '=', $request->id_registro )->get();
+
+            if( isset( $product[0] ) && ( $product[0] != null ) ){
+                $status_change = DB::table('producto') 
+                    ->where('id', '=', $request->id_registro)
+                    ->update(['descripcion' =>  $request->descripcion]);
+            }
+
+           /* $data = [ 
+              'success' => 'true', 
+              'message' => 'Producto ' . $product[0]->no_identificacion . ' editado correctamente.' 
+              ];
+              return $data; 
+              */
+
+
+            return response()->json(array(
+                        'success'=>'true',
+                        'message' => 'Producto ' . $product[0]->no_identificacion . ' editado correctamente.' 
+                    ));
+
+
+      }
       
     }
 

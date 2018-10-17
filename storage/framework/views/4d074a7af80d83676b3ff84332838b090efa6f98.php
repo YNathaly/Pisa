@@ -14,6 +14,7 @@
                   <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>"></input>
                       <div class="modal-body">
                         <div style='margin: 5px 0px 0px 260px' class='before'></div> 
+                            <div id="mensajes"></div>
                             <div class="form-group">
                                 <p>Descripción de producto</p>
                                  <input id="descripcion" type="text" class="form-control" name="descripcion" value="" required autofocus>

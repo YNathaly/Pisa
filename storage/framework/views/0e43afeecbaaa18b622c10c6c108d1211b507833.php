@@ -4,12 +4,15 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <meta http-equiv='cache-control' content='no-cache'>
+    <meta http-equiv='expires' content='0'>
+    <meta http-equiv='pragma' content='no-cache'>
     <!-- CSRF Token -->
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
     <title><?php echo e(config('app.name', 'Laravel')); ?></title>
 
+   
     <!-- Styles -->
     <link href="<?php echo e(asset('css/app.css')); ?>" rel="stylesheet">
     <link href="<?php echo e(asset('css/global.css')); ?>" rel="stylesheet">
@@ -24,7 +27,7 @@
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?php echo e(asset('css/daterangepicker.css')); ?>" rel="stylesheet">
     <!-- <link href="<?php echo e(asset('css/datepicker.css')); ?>" rel="stylesheet"> -->
-
+ 
 </head> 
 <body>
    
@@ -69,7 +72,7 @@
 
                                 <ul class="dropdown-menu">
                                     <li>
-                                        <a href="<?php echo e(route('logout')); ?>"
+                                        <a id="cerrar" href="<?php echo e(route('logout')); ?>"
                                             onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
                                             Logout
@@ -99,31 +102,32 @@
 
     </div>
 
-    <!-- Scripts -->
-    <script src="<?php echo e(asset('js/app.js')); ?>"></script>
+    <!-- Scripts 
+    <script src="<?php echo e(asset('js/app.js')); ?>"></script>-->
     <script src="<?php echo e(asset('js/jquery-3.3.1.js')); ?>"></script>
-    
+
     <!-- Librerias para datarangepicker -->
     <script src="<?php echo e(asset('js/jquery.min.js')); ?>"></script>
     <script src="<?php echo e(asset('js/moment.min.js')); ?>"></script>
     <script src="<?php echo e(asset('js/daterangepicker.min.js')); ?>"></script>
-    <!-- <script src="<?php echo e(asset('js/datepicker.js')); ?>"></script>
+    <script src="<?php echo e(asset('js/bootstrap.min.js')); ?>"></script>
+   <!-- <script src="<?php echo e(asset('js/bootstrap.min.js')); ?>"></script>
+     <script src="<?php echo e(asset('js/datepicker.js')); ?>"></script>
 
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
 
-
-
-
     <script src="<?php echo e(asset('js/jquery.dataTables.min.js')); ?>"></script>
-    <!--<script src="<?php echo e(asset('js/dataTables.bootstrap.min.js')); ?>"></script> -->
+    
+    <!-- <script src="<?php echo e(asset('js/dataTables.bootstrap.min.js')); ?>"></script> -->
+
     <script src="<?php echo e(asset('js/global.js')); ?>"></script>
     <script src="<?php echo e(asset('js/dataTables.buttons.min.js')); ?>"></script>
+    
     <script src="<?php echo e(asset('js/jszip.min.js')); ?>"></script>
     <script src="<?php echo e(asset('js/pdfmake.min.js')); ?>"></script>
     <script src="<?php echo e(asset('js/vfs_fonts.js')); ?>"></script>
-    <script src="<?php echo e(asset('js/buttons.html5.min.js')); ?>"></script>
-
+    <script src="<?php echo e(asset('js/buttons.html5.min.js')); ?>"></script> 
     
 
 </body>

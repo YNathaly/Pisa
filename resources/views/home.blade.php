@@ -2,6 +2,7 @@
 @section('content')
   @if(Auth::user()->role_id == 1)
    @include('partials.modal.editar')
+   @include('partials.modal.general')
           <div class="container">
             <div class="row">
                 <div class="col-md-12">
@@ -15,13 +16,27 @@
                                     {{ session('status') }}
                                 </div>
                             @endif
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            @foreach ($errors->all() as $error)
+              <li>{{ $error }}</li>
+            @endforeach
+        </div>
+    @endif
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12">
                                         <div class="panel">
                                             <div class="panel-body">
-
                                                 <!--<label class="title-table">Resumen de movimientos</label>-->
+                                                <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 30px;">
+                                                         <a class="btn btn-success" id="general_modal" data-toggle="modal" data-target="#generalModal">REPORTES</a> 
+                                                 </div>
                                                  <table id="a_validar" class="table table-striped table-bordered a_validar" style="margin-top: 50px">
+                                                    <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;"></div>
+                                                     <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
+                                                       <label>Busqueda por producto: </label>
+                                                        <input type="text" id="busqueda" name="busqueda" placeholder="Buscar..."/>
+                                                     </div>
                                                     <thead>
                                                         <tr class="tr-style">
                                                             <th>A. P. N/A</th>
@@ -180,6 +195,10 @@
 
                             <h2 class="title-table">Historial de facturas</h2>
                             <table id="factura" class="table table-striped table-bordered table-factura" style="margin-top: 50px">
+                                <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
+                                    <label>Busqueda por Receptor: </label>
+                                    <input type="text" id="busqueda_receptor" name="busqueda_receptor" placeholder="Buscar..."/>
+                                </div>
                                 <thead>
                                     <tr class="tr-style">
                                         <th>Factura</th>
@@ -198,9 +217,6 @@
                                             <a class="btn btn-primary" style="background: #2a91d6;" href="{{App::make('url')->to('/')}}/factura_info/{{ $factura->id }}/{{ 1 }}"><span class="glyphicon glyphicon-list"></span></a>
                                             <a class="btn btn-primary" style="background: #2a91d6;" href="{{App::make('url')->to('/')}}/factura_info/{{ $factura->id }}/{{ 2 }}
                                             "><span class="glyphicon glyphicon-usd"></span></a> {{ $factura->fecha }}
-
-                                      
-
                                         </td>
                                     </tr>
                                 @endforeach
@@ -209,6 +225,10 @@
                             <br><br><br>
                             <h2 class="title-table">Productos aprobados</h2>
                             <table id="aprobados" class="table table-striped table-bordered table-aprobados" style="margin-top: 50px">
+                                 <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
+                                    <label>Busqueda por descripción de producto: </label>
+                                    <input type="text" id="busqueda_aprobados" name="busqueda_aprobados" placeholder="Buscar..."/>
+                                </div>
                                 <thead>
                                     <tr class="tr-style">
                                         <th>No. identificación</th>
@@ -240,6 +260,10 @@
                             <!-- Se muestran los productos que no existen dentro de la Base de Datos de PISA -->
                             <h2 class="title-table">Productos pendientes</h2>
                             <table id="pendientes" class="table table-striped table-bordered table-pendientes" style="margin-top: 50px">
+                                <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
+                                    <label>Busqueda por descripción de producto: </label>
+                                    <input type="text" id="busqueda_pendientes" name="busqueda_pendientes" placeholder="Buscar..."/>
+                                </div>
                                 <thead>
                                     <tr class="tr-style">
                                         <th>No. identificación</th>
@@ -272,6 +296,10 @@
                             <!-- Se muestran los productos que no existen dentro de la Base de Datos de PISA -->
                             <h2 class="title-table">Productos NO aprobados</h2>
                             <table id="no_aprobados" class="table table-striped table-bordered table-no-aprobados" style="margin-top: 50px">
+                                <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
+                                    <label>Busqueda por descripción de producto: </label>
+                                    <input type="text" id="busqueda_no_aprobados" name="busqueda_no_aprobados" placeholder="Buscar..."/>
+                                </div>
                                 <thead>
                                     <tr class="tr-style">
                                         <th>No. identificación</th>
@@ -293,9 +321,12 @@
                                             <td> {{ $producto->descripcion }} </td>
                                             <td> {{ $producto->cantidad }} </td>
                                             <td> $ {{ $producto->importe }} </td>
-                                            <td>
-                                                <a class="btn btn-primary" id="mail_modal" style="background: #2a91d6;" data-toggle="modal" data-target="#mailModal" onclick="send_mail({{$producto->id}})">SOLICITAR REVISIÓN</a>
-
+                                            <td class="acciones">
+                                                @if($producto->validacion !== "SI")
+                                                    <a class="btn btn-primary mail_modal" id="mail_modal" name="mail_modal" data-toggle="modal" data-target="#mailModal" onclick="send_mail({{$producto->id}})">SOLICITAR REVISIÓN</a>
+                                                @elseif($producto->validacion == "SI")
+                                                    <a class="btn btn-success" id="mail_button" name="mail_button" disabled>EN REVISIÓN...</a>
+                                                @endif
                                                 <a class="btn btn-danger" id="delete_modal" data-toggle="modal" data-target="#deleteModal" onclick="deshabilitar_registro({{$producto->id}})"><span class="glyphicon glyphicon-remove"></span></a>
                                             </td>
                                         </tr>
@@ -379,10 +410,44 @@
                         <button type="submit" class="btn btn-primary imprimir_reporte" name="imprimir_reporte" id="imprimir_reporte">Imprimir Reporte</button>
                   </div>
                 </form>  
-
-
-           
             </div>
           </div>
         </div>
+
+
+@if(Auth::user()->role_id !== 1)
+   <!-- Productos Aprobados Modal -->
+        <div class="modal fade" id="aprobadosModal" tabindex="-1" role="dialog" aria-labelledby="aprobadosModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+                <h3 class="modal-title" id="aprobadosModalLabel">Productos aprobados</h3>
+              </div>
+                  <input type="hidden" name="_token" value="{{ csrf_token() }}"></input>
+                      <div class="modal-body">
+                        <div style='margin: 5px 0px 0px 260px' class='before'></div> 
+                            <div class="form-group">
+                                 <ul>
+                                    @if(isset($prod_popup) and ($prod_popup != '') )
+                                       @foreach($prod_popup as $prod)
+                                          @if($prod['estatus'] == 'APROBADO')
+                                            <li class="producto_aprobado">{{ $prod['descripcion'] }}</li>
+                                          @endif
+                                       @endforeach
+                                   @endif
+                                 </ul>
+                            </div>
+                      </div>
+                      <div class="modal-footer">
+                       <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                      </div> 
+              </div>
+            </div>
+          </div>
+@endif
+
 @endsection
+

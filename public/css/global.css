@@ -2,6 +2,39 @@
     display:none;
 }
 
+
+.scrollsearch{
+    height: 263px;
+    overflow: auto;
+}
+
+#res-search{
+    display: block;
+    position: absolute;
+    border: solid 1px #000;
+    width: 250px;
+    z-index: 100000;
+    background: #fff;
+    display: none;
+}
+
+.cont-reg {
+    padding: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.cont-reg .labelSeccion {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.labelSeccion:hover{
+    background: #679acb;
+    color: #FFFFFF;
+
+}
+
 footer {
    /*position: fixed;
    left: 0;
@@ -75,6 +108,15 @@ body{
 
 .splitBlock{
   padding-bottom: 50px;
+}
+
+
+.dt-buttons{
+  margin-bottom: 20px;
+}
+
+.dataTables_length{
+  margin-right: 10px;
 }
 
 @media screen and (max-width: 600px) {

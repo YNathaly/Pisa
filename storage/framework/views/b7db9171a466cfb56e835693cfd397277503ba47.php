@@ -1,6 +1,7 @@
 <?php $__env->startSection('content'); ?>
   <?php if(Auth::user()->role_id == 1): ?>
    <?php echo $__env->make('partials.modal.editar', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
+   <?php echo $__env->make('partials.modal.general', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
           <div class="container">
             <div class="row">
                 <div class="col-md-12">
@@ -15,13 +16,27 @@
 
                                 </div>
                             <?php endif; ?>
+    <?php if($errors->any()): ?>
+        <div class="alert alert-danger">
+            <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+              <li><?php echo e($error); ?></li>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        </div>
+    <?php endif; ?>
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12">
                                         <div class="panel">
                                             <div class="panel-body">
-
                                                 <!--<label class="title-table">Resumen de movimientos</label>-->
+                                                <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 30px;">
+                                                         <a class="btn btn-success" id="general_modal" data-toggle="modal" data-target="#generalModal">REPORTES</a> 
+                                                 </div>
                                                  <table id="a_validar" class="table table-striped table-bordered a_validar" style="margin-top: 50px">
+                                                    <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;"></div>
+                                                     <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
+                                                       <label>Busqueda por producto: </label>
+                                                        <input type="text" id="busqueda" name="busqueda" placeholder="Buscar..."/>
+                                                     </div>
                                                     <thead>
                                                         <tr class="tr-style">
                                                             <th>A. P. N/A</th>
@@ -189,6 +204,10 @@
 
                             <h2 class="title-table">Historial de facturas</h2>
                             <table id="factura" class="table table-striped table-bordered table-factura" style="margin-top: 50px">
+                                <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
+                                    <label>Busqueda por Receptor: </label>
+                                    <input type="text" id="busqueda_receptor" name="busqueda_receptor" placeholder="Buscar..."/>
+                                </div>
                                 <thead>
                                     <tr class="tr-style">
                                         <th>Factura</th>
@@ -209,9 +228,6 @@
 
                                             "><span class="glyphicon glyphicon-usd"></span></a> <?php echo e($factura->fecha); ?>
 
-
-                                      
-
                                         </td>
                                     </tr>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
@@ -220,6 +236,10 @@
                             <br><br><br>
                             <h2 class="title-table">Productos aprobados</h2>
                             <table id="aprobados" class="table table-striped table-bordered table-aprobados" style="margin-top: 50px">
+                                 <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
+                                    <label>Busqueda por descripción de producto: </label>
+                                    <input type="text" id="busqueda_aprobados" name="busqueda_aprobados" placeholder="Buscar..."/>
+                                </div>
                                 <thead>
                                     <tr class="tr-style">
                                         <th>No. identificación</th>
@@ -251,6 +271,10 @@
                             <!-- Se muestran los productos que no existen dentro de la Base de Datos de PISA -->
                             <h2 class="title-table">Productos pendientes</h2>
                             <table id="pendientes" class="table table-striped table-bordered table-pendientes" style="margin-top: 50px">
+                                <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
+                                    <label>Busqueda por descripción de producto: </label>
+                                    <input type="text" id="busqueda_pendientes" name="busqueda_pendientes" placeholder="Buscar..."/>
+                                </div>
                                 <thead>
                                     <tr class="tr-style">
                                         <th>No. identificación</th>
@@ -283,6 +307,10 @@
                             <!-- Se muestran los productos que no existen dentro de la Base de Datos de PISA -->
                             <h2 class="title-table">Productos NO aprobados</h2>
                             <table id="no_aprobados" class="table table-striped table-bordered table-no-aprobados" style="margin-top: 50px">
+                                <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
+                                    <label>Busqueda por descripción de producto: </label>
+                                    <input type="text" id="busqueda_no_aprobados" name="busqueda_no_aprobados" placeholder="Buscar..."/>
+                                </div>
                                 <thead>
                                     <tr class="tr-style">
                                         <th>No. identificación</th>
@@ -304,9 +332,12 @@
                                             <td> <?php echo e($producto->descripcion); ?> </td>
                                             <td> <?php echo e($producto->cantidad); ?> </td>
                                             <td> $ <?php echo e($producto->importe); ?> </td>
-                                            <td>
-                                                <a class="btn btn-primary" id="mail_modal" style="background: #2a91d6;" data-toggle="modal" data-target="#mailModal" onclick="send_mail(<?php echo e($producto->id); ?>)">SOLICITAR REVISIÓN</a>
-
+                                            <td class="acciones">
+                                                <?php if($producto->validacion !== "SI"): ?>
+                                                    <a class="btn btn-primary mail_modal" id="mail_modal" name="mail_modal" data-toggle="modal" data-target="#mailModal" onclick="send_mail(<?php echo e($producto->id); ?>)">SOLICITAR REVISIÓN</a>
+                                                <?php elseif($producto->validacion == "SI"): ?>
+                                                    <a class="btn btn-success" id="mail_button" name="mail_button" disabled>EN REVISIÓN...</a>
+                                                <?php endif; ?>
                                                 <a class="btn btn-danger" id="delete_modal" data-toggle="modal" data-target="#deleteModal" onclick="deshabilitar_registro(<?php echo e($producto->id); ?>)"><span class="glyphicon glyphicon-remove"></span></a>
                                             </td>
                                         </tr>
@@ -392,11 +423,46 @@
                         <button type="submit" class="btn btn-primary imprimir_reporte" name="imprimir_reporte" id="imprimir_reporte">Imprimir Reporte</button>
                   </div>
                 </form>  
-
-
-           
             </div>
           </div>
         </div>
+
+
+<?php if(Auth::user()->role_id !== 1): ?>
+   <!-- Productos Aprobados Modal -->
+        <div class="modal fade" id="aprobadosModal" tabindex="-1" role="dialog" aria-labelledby="aprobadosModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+                <h3 class="modal-title" id="aprobadosModalLabel">Productos aprobados</h3>
+              </div>
+                  <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>"></input>
+                      <div class="modal-body">
+                        <div style='margin: 5px 0px 0px 260px' class='before'></div> 
+                            <div class="form-group">
+                                 <ul>
+                                    <?php if(isset($prod_popup) and ($prod_popup != '') ): ?>
+                                       <?php $__currentLoopData = $prod_popup; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $prod): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                          <?php if($prod['estatus'] == 'APROBADO'): ?>
+                                            <li class="producto_aprobado"><?php echo e($prod['descripcion']); ?></li>
+                                          <?php endif; ?>
+                                       <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                   <?php endif; ?>
+                                 </ul>
+                            </div>
+                      </div>
+                      <div class="modal-footer">
+                       <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                      </div> 
+              </div>
+            </div>
+          </div>
+<?php endif; ?>
+
 <?php $__env->stopSection(); ?>
+
+
 <?php echo $__env->make('layouts.app', array_except(get_defined_vars(), array('__data', '__path')))->render(); ?>
