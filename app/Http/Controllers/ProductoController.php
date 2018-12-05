@@ -24,7 +24,7 @@ class ProductoController extends Controller
     }
 
     public function index(Request $request){
-        if(Auth::user()->id == '2'){
+        if(Auth::user()->id == '1'){
         //Se envian todas las facturas que pertenecen a ese cliente.
             $facturas = Facturas::select('*')->get();
             $productos = Productos::select('*')->where('id','=',$request->id)->get();

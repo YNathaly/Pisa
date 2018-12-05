@@ -36,13 +36,13 @@
 									@foreach($facturas as $factura)
 										@if( $factura['id_user'] == $usuario['id'])
 					                       	<tr class="table_style">
-				                                <th>Folio</th>
-				                                <th>Subtotal</th>
-				                                <th>Total</th>
-				                                <th>Descuento</th>
-				                                <th>Moneda</th>
-				                                <th>Fecha</th>
-				                                <th></th>
+				                                <th class="upper">Folio</th>
+				                                <th class="upper">Subtotal</th>
+				                                <th class="upper">Total</th>
+				                                <th class="upper">Descuento</th>
+				                                <th class="upper">Moneda</th>
+				                                <th class="upper">Fecha</th>
+				                                <th class="upper">Pisa puntos</th>
 				                            </tr>
 				                        
 				                            <tr id="facturaRow_{{ $factura['id'] }}">
@@ -52,7 +52,22 @@
 				                                <td> {{ $factura['descuento'] }} </td>
 				                                <td> $ {{ $factura['moneda'] }} </td>
 				                                <td> {{ $factura['fecha'] }} </td>
-				                                <td></td>
+				                                <td>
+
+												<?php			                                	
+													$pisa_pesos = 0;
+												?>		                                	
+													@foreach($infoFormato as $producto)          
+					                            		@if($factura['folio'] == $producto['folio'] && $producto['estatus'] == 'APROBADO' )
+							                           		<?php
+																
+																$pisa_pesos += $producto['importe'] ;
+							                           		?>
+									                	@endif
+									                @endforeach
+									                	{{ $pisa_pesos }}
+
+				                                </td>
 				                            </tr>
 				                            <tr class="table_style">
 				                                <th>Clave</th>

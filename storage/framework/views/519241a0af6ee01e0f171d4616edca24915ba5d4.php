@@ -3,6 +3,7 @@
   <head>
     <title>DATOS DE FACTURA</title>
        <link href="<?php echo e(asset('css/bootstrap.min.css')); ?>" rel="stylesheet">
+       <link href="<?php echo e(asset('css/global.css')); ?>" rel="stylesheet">
   </head>
   <body>
 <br><br>
@@ -23,9 +24,9 @@
 		                    <table id="factura" class="table table-striped table-bordered table-factura" style="margin-top: 50px">
                                 <thead>
                                     <tr class="table table-bordered">
-                                        <th>Factura</th>
-                                        <th>Monto de Factura</th>
-                                        <th>Pisapesos por Factura</th>
+                                        <th class="upper">Factura</th>
+                                        <th class="upper">Monto de Factura</th>
+                                        <th class="upper">Pisapesos por Factura</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -33,7 +34,7 @@
                                     <tr id="facturaRow<?php echo e($factura['id']); ?>" class="factura">
                                         <td> <?php echo e($factura['folio']); ?> </td>
                                         <td> $ <?php echo e($factura['total']); ?> </td>
-                                        <td> <?php echo e($factura['pisapesos']); ?> </td>
+                                        <td> <?php echo e($pisa_pesos); ?> </td>
                                     </tr>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </tbody>

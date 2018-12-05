@@ -225,7 +225,7 @@
                            <label for="rfc" class="col-xs-12 col-sm-4 col-lg-4" style="text-align: left">{{ __('RFC *') }}</label>
                            
                             <div title="Agregar RFC Persona Moral.">
-                                <img  src="img/sign.png" class="col-xs-12 col-sm-2 col-lg-2" >
+                                <img  src="img/sign.png" class="col-xs-1 col-sm-1 col-lg-2" >
                             </div>
 
                            <div class="col-xs-5 col-sm-5 col-lg-5">

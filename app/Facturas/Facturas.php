@@ -15,4 +15,7 @@ class Facturas extends Model
                         'lugar_expedicion',
                         'fecha'];
 
+
+
+
 }

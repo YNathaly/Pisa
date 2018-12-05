@@ -25,7 +25,7 @@ Route::get('/producto/{id}', 'ProductoController@index');
 
 Route::post('/validacion', 'HomeController@validacion'); 
 Route::post('/validacion-producto', 'HomeController@validacion_producto'); 
-Route::post('/filtro-rfc', 'HomeController@filtro_rfc');
+Route::post('/filtro_rfc', 'HomeController@filtro_rfc');
 Route::post('/agregar_rfc', 'HomeController@agregar_rfc');
 Route::post('/eliminar', 'HomeController@eliminar'); 
 Route::post('/editar', 'HomeController@editar'); 

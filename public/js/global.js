@@ -16,11 +16,17 @@ $(document).ready(function() {
 
   cargar_datatable();
 
-  $('input[name="daterange"]').daterangepicker({
+  /*$('input[name="daterange"]').daterangepicker({
     opens: 'left'
 	  	}, function(start, end, label) {
 	    	console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
-  });
+  });*/
+
+	$('input[name="daterange"]').daterangepicker({
+	    locale: {
+	      format: 'DD/MM/YYYY'
+	    }
+  	});
 
 
 	$.ajaxSetup({
@@ -50,8 +56,7 @@ $(document).ready(function() {
 		    contentType: false,
 		    processData: false,
 		    success: function(respuesta){	
-
-		    	if(respuesta.factura != null && respuesta.success == true){
+				if(respuesta.factura != null && respuesta.success == true){
 					var row = '<tr id="facturaRow" class="factura">\
 		                <td>' + respuesta.factura[0]['folio']  + '</td>\
 		                <td>$ ' + respuesta.factura[0]['total']  + '</td>\
@@ -62,19 +67,33 @@ $(document).ready(function() {
 	 				$('#factura tr:last').after(row);
 	 				$('#mensajes').html('');
 
-					//Se agregan los registros en la tabla de productos.
-						for (var i in respuesta.xml_info) {
-							var inv = '<tr>\
-							                <td>' + respuesta.xml_info[i]['no_identificacion']  + '</td>\
-							                <td>' + respuesta.factura[0]['folio']+ '</td>\
-							                <td>' + respuesta.xml_info[i]['unidad']  + '</td>\
-							                <td>' + respuesta.xml_info[i]['descripcion']  + '</td>\
-							                <td>' + respuesta.xml_info[i]['cantidad']  + '</td>\
-							                <td>$ ' + respuesta.xml_info[i]['importe']  + '</td>\
+					//Se agregan los registros en la tabla de productos aprobados.
+						$.each( respuesta.xml_info, function( key, value ) {
+							if(value['estatus'] === "APROBADO"){
+								var aprob = '<tr>\
+							                <td>' + value['no_identificacion']  + '</td>\
+							                <td>' + value['folio_factura']+ '</td>\
+							                <td>' + value['unidad']  + '</td>\
+							                <td>' + value['descripcion']  + '</td>\
+							                <td>' + value['cantidad']  + '</td>\
+							                <td>$ ' + value['importe']  + '</td>\
 							           </tr>';
+							    $('#aprobados tr:last').after(aprob); 
+							}
 
-							    $('#pendientes tr:last').after(inv); 
-						}
+					//Se agregan los registros en la tabla de productos pendientes.
+							if(value['estatus'] === "PENDIENTE"){
+								var pend = '<tr>\
+							                <td>' + value['no_identificacion']  + '</td>\
+							                <td>' + value['folio_factura']+ '</td>\
+							                <td>' + value['unidad']  + '</td>\
+							                <td>' + value['descripcion']  + '</td>\
+							                <td>' + value['cantidad']  + '</td>\
+							                <td>$ ' + value['importe']  + '</td>\
+							           </tr>';
+							    $('#pendientes tr:last').after(pend); 
+							}
+						});
 					$('#mensajes').html('<div class="alert alert-success"> Su factura con folio '+ respuesta.factura[0]['folio'] +' se cargo con éxito!</div>'); 
 
  				}
@@ -100,8 +119,22 @@ $(document).ready(function() {
 
 
 $('#rfc').change(function(){
+	var select = $(this);
+	var form = select.closest('form');// alert( form.attr('action') );
+	$('#form_rfc').closest('form').submit();
+});
+
+
+/*
+$('#rfc').change(function(){
 
 	var id = $(this).val();
+
+	if( id== 0){
+        location.reload();
+    }else{
+
+	
 	$('.factura').html('');
 	$('.aprobados, .pendientes, .no_aprobados').html('');
 		$.ajax({
@@ -128,7 +161,7 @@ $('#rfc').change(function(){
 					               </tr>';
 					             $('#factura tr:last').after(row);
 					             /*   {{ App::make("url")->to('/')}}/factura_info/{{ respuesta.facturas[j]["id"] }}   */
-					}
+				/*	}
 				}
 
 				if(respuesta.productos != null){
@@ -191,12 +224,12 @@ $('#rfc').change(function(){
 	 			}
 		    }
 		});
+	}
+});
 
-	});
+*/
 
-
-
-	$('table .validar-producto').click(function(){
+	$('table input[type="radio"]').click(function(){
 		var id = $(this).attr('data-id');
 		var estatus = $(this).val();
 
@@ -238,7 +271,7 @@ $("#buscar").on("input", function(){
 			var allsearch=msg;
 	    	var extraclass="scrollsearch";
 	    	var contenido="";
-	    	console.log(allsearch);
+	    	//console.log(allsearch);
 	    	 if(allsearch.length>0){
                    $("#res-search").css("display","block");
                     if(allsearch.length>=5){
@@ -290,7 +323,7 @@ $(document).click(function() {
 });//ready document
 
 
-
+//Envío por parte del cliente para que se verifique que es un producto valido.
 function send_mail(product_id){
  $('#product_id').val(product_id);
 
@@ -308,6 +341,7 @@ function send_mail(product_id){
                     $('#enviar_mail').attr('disabled', true);
                 },
 			    success: function(respuesta){
+
 			    	if(respuesta == 1){
 			    		$('.before').hide();
 			    		$('#mail_modal').hide();
@@ -320,6 +354,8 @@ function send_mail(product_id){
 		});
 }
 
+
+//Se deshabilita el registro del lado del cliente, solo cambio de estatus
 function deshabilitar_registro(id_registro){
 		$('#id_registro').val(id_registro);
 
@@ -382,6 +418,9 @@ function editar_registro(id_registro, descripcion){
 
 }
 
+
+
+
 function cargar_datatable(){
 	//Generic function,  Init DataTable library in each table, administrator and Client role.  
 	var tablas = ['a_validar', 'table-factura', 'table-aprobados', 'table-pendientes', 'table-no-aprobados'];
@@ -389,7 +428,55 @@ function cargar_datatable(){
 		for (var i = 0; i < tablas.length; i++) {
 			
 			var columnas = 3;
-			if(tablas[i] == 'factura' && busqueda[i] == 'busqueda_receptor'){
+			if(tablas[i] == 'table-factura' && busqueda[i] == 'busqueda_receptor'){
+				columnas = 2;
+			}else if(tablas[i] == 'a_validar' && busqueda[i] == 'busqueda'){
+				columnas = 4;
+			}
+	   	    //DataTable init for client role.
+			 if(tablas[i] == 'a_validar' ){
+    			var datatable = $('.'+tablas[i]).DataTable({
+    		         dom: 'lBfrtip',
+    		         "iDisplayLength": 10,
+    		         "aLengthMenu": [[10, 25, 50, 100], [10, 25, 50,100, "All"]]
+    		    });
+	   	    }else{
+	   	    
+    			var datatable = $('.'+tablas[i]).DataTable({
+    		         dom: 'lBfrtip',
+    		         "iDisplayLength": 5,
+    		         "aLengthMenu": [[5, 10, 25, 50, 100], [5, 10, 25, 50,100, "All"]]
+    		    });
+	   	   
+	   	    }
+
+		     //hidden search button native of DataTable library
+		    $('#a_validar_filter, #no_aprobados_filter, #aprobados_filter, #factura_filter, #pendientes_filter').hide();
+			// Apply the search for description column. Client and Administrator role inside of tables.
+		   	datatable.columns(columnas).every(function(){
+		    	var that = this;
+		        $( '#'+busqueda[i] ).on('keyup change', function () {
+		            if ( that.search() !== this.value ) {
+		                that
+		                    .search( this.value )
+		                    .draw();
+		            }
+		        });
+		    });
+	}
+}
+
+
+
+
+/*function cargar_datatable(){
+	//Generic function,  Init DataTable library in each table, administrator and Client role.  
+	var tablas = ['a_validar', 'table-factura', 'table-aprobados', 'table-pendientes', 'table-no-aprobados'];
+	var busqueda = ['busqueda', 'busqueda_receptor', 'busqueda_aprobados', 'busqueda_pendientes', 'busqueda_no_aprobados'];
+		for (var i = 0; i < tablas.length; i++) {
+			
+			var columnas = 3;
+			if(tablas[i] == 'table-factura' && busqueda[i] == 'busqueda_receptor'){
 				columnas = 2;
 			}else if(tablas[i] == 'a_validar' && busqueda[i] == 'busqueda'){
 				columnas = 4;
@@ -416,7 +503,7 @@ function cargar_datatable(){
 		        });
 		    });
 	}
-}
+}*/
 
 //Show file route path.
 $('#factura-xml').change(function(e) {

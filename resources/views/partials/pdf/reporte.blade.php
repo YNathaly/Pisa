@@ -4,6 +4,7 @@
     <!--<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>-->
     <title>Reporte General PISA </title>
      <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+     <link href="{{ asset('css/pdfs.css') }}" rel="stylesheet">
   </head>
   <body>
 
@@ -23,13 +24,13 @@
 
 		                     <table id="a_validar" class="table table-striped table-bordered a_validar" style="margin-top: 50px">
 		                        <thead>
-		                            <tr class="table table-bordered">
-		                                <th>Folio</th>
-		                                <th>Subtotal</th>
-		                                <th>Total</th>
-		                                <th>Descuento</th>
-		                                <th>Moneda</th>
-		                                <th>Fecha</th>
+		                            <tr class="table_style">
+		                                <th class="upper">Folio</th>
+		                                <th class="upper">Subtotal</th>
+		                                <th class="upper">Total</th>
+		                                <th class="upper">Descuento</th>
+		                                <th class="upper">Moneda</th>
+		                                <th class="upper">Fecha</th>
 		                            </tr>
 		                        </thead>
 		                        <tbody>
@@ -54,19 +55,19 @@
 
 							                     <table id="a_validar" class="table table-striped table-bordered a_validar" style="margin-top: 50px">
 							                        <thead>
-							                            <tr class="table table-bordered" style="font-size: 10px">
-							                                <th>Identificación</th>
+							                            <tr class="table_style">
+							                                <th>Clave</th>
 							                                <th>Factura</th>
 							                                <th>Descripción</th>
 							                                <th>Cantidad</th>
 							                                <th>Descuento</th>
 							                                <th>Importe</th>
-							                                <th>Valor Unitario</th>
+							                                <th style="font-size: 10px">Valor Unitario</th>
 							                            </tr>
 							                        </thead>
 							                        <tbody>
 							                        @foreach($infoFormato as $producto)
-							                            <tr id="productoRow_{{ $producto['id'] }}" style="font-size: 10px">
+							                            <tr id="productoRow_{{ $producto['id'] }}">
 							                                <td> {{ $producto['no_identificacion'] }} </td>
 							                                <td> {{ $producto['folio'] }} </td>
 							                                <td> {{ $producto['descripcion'] }} </td>

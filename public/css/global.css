@@ -2,16 +2,21 @@
     display:none;
 }
 
-
-.scrollsearch{
-    height: 263px;
-    overflow: auto;
+.tr-style{
+    background: #d8d4d4;
 }
+
+.upper{
+  text-transform: uppercase;
+  font-size: 11px;
+  background: #d8d4d4;
+}
+
 
 #res-search{
     display: block;
     position: absolute;
-    border: solid 1px #000;
+    border: solid 1px #000
     width: 250px;
     z-index: 100000;
     background: #fff;
@@ -135,5 +140,10 @@ body{
 
     #main_logo{
         width: 61px;
+    }
+    
+    .scrollsearch{
+        height: 263px;
+        overflow: auto;
     }
 }

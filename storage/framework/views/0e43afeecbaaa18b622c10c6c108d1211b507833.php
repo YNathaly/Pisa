@@ -26,6 +26,7 @@
     <link href="https://cdn.datatables.net/buttons/1.5.2/css/buttons.dataTables.min.css" rel="stylesheet">-->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="<?php echo e(asset('css/daterangepicker.css')); ?>" rel="stylesheet">
+    <link rel="shortcut icon" href="favicon.ico">
     <!-- <link href="<?php echo e(asset('css/datepicker.css')); ?>" rel="stylesheet"> -->
  
 </head> 
@@ -102,8 +103,7 @@
 
     </div>
 
-    <!-- Scripts 
-    <script src="<?php echo e(asset('js/app.js')); ?>"></script>-->
+    <!-- Scripts -->
     <script src="<?php echo e(asset('js/jquery-3.3.1.js')); ?>"></script>
 
     <!-- Librerias para datarangepicker -->
@@ -112,23 +112,14 @@
     <script src="<?php echo e(asset('js/daterangepicker.min.js')); ?>"></script>
     <script src="<?php echo e(asset('js/bootstrap.min.js')); ?>"></script>
    <!-- <script src="<?php echo e(asset('js/bootstrap.min.js')); ?>"></script>
-     <script src="<?php echo e(asset('js/datepicker.js')); ?>"></script>
-
+    <script src="<?php echo e(asset('js/datepicker.js')); ?>"></script>
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
-
-    <script src="<?php echo e(asset('js/jquery.dataTables.min.js')); ?>"></script>
-    
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
     <!-- <script src="<?php echo e(asset('js/dataTables.bootstrap.min.js')); ?>"></script> -->
 
     <script src="<?php echo e(asset('js/global.js')); ?>"></script>
-    <script src="<?php echo e(asset('js/dataTables.buttons.min.js')); ?>"></script>
-    
-    <script src="<?php echo e(asset('js/jszip.min.js')); ?>"></script>
-    <script src="<?php echo e(asset('js/pdfmake.min.js')); ?>"></script>
-    <script src="<?php echo e(asset('js/vfs_fonts.js')); ?>"></script>
-    <script src="<?php echo e(asset('js/buttons.html5.min.js')); ?>"></script> 
-    
+    <script src="<?php echo e(asset('js/jquery.dataTables.min.js')); ?>"></script>
+
 
 </body>
 </html>

@@ -30,7 +30,9 @@
                                                 <!--<label class="title-table">Resumen de movimientos</label>-->
                                                 <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 30px;">
                                                          <a class="btn btn-success" id="general_modal" data-toggle="modal" data-target="#generalModal">REPORTES</a> 
-                                                 </div>
+                                                         <a href="docs/ManualAdministrador.pdf" class="btn btn-primary" target="_blank">MANUAL ADMINISTRADOR</a>
+                                                </div>
+                                                 <div class="scrollsearch">
                                                  <table id="a_validar" class="table table-striped table-bordered a_validar" style="margin-top: 50px">
                                                     <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;"></div>
                                                      <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
@@ -44,8 +46,6 @@
                                                             <th>Factura</th>
                                                             <th>Unidad</th>
                                                             <th>Descripción</th>
-                                                            <th>Cantidad</th>
-                                                            <th>Importe</th>
                                                             <th>Acciones</th>
                                                         </tr>
                                                     </thead>
@@ -53,16 +53,14 @@
                                                     @foreach($productos as $producto)
                                                         <tr id="productoRow_{{ $producto->id }}">
                                                             <td>
-                                                                <input type="radio" class="validar-producto" data-id="{{ $producto->id }}" id="accion_{{ $producto->id }}" name="accion_{{ $producto->id }}" value="aprobado" {{ $producto->estatus === 'APROBADO' ? 'checked' : '' }}>
-                                                                <input type="radio" class="validar-producto" data-id="{{ $producto->id }}" id="accion_{{ $producto->id }}" name="accion_{{ $producto->id }}" value="pendiente" {{ $producto->estatus === 'PENDIENTE' ? 'checked' : '' }}>
+                                                                <input type="radio" class="validar-producto" data-id="{{ $producto->id }}" id="accion_{{ $producto->id }}" name="accion_{{ $producto->id }}" value="APROBADO" {{ $producto->estatus === 'APROBADO' ? 'checked' : '' }}>
+                                                                <input type="radio" class="validar-producto" data-id="{{ $producto->id }}" id="accion_{{ $producto->id }}" name="accion_{{ $producto->id }}" value="PENDIENTE" {{ $producto->estatus === 'PENDIENTE' ? 'checked' : '' }}>
                                                                 <input type="radio" class="validar-producto" data-id="{{ $producto->id }}" id="accion_{{ $producto->id }}" name="accion_{{ $producto->id }}" value="no_aprobados" {{ $producto->estatus === 'NO APROBADO' ? 'checked' : '' }}>
                                                             </td>
                                                             <td> {{ $producto->no_identificacion }} </td>
-                                                            <td> {{ $producto->id_factura }} </td>
+                                                            <td> {{ $producto->folio_factura }} </td>
                                                             <td> {{ $producto->unidad }} </td>
                                                             <td> {{ $producto->descripcion }} </td>
-                                                            <td> $ {{ $producto->cantidad }} </td>
-                                                            <td> $ {{ $producto->importe }} </td>
                                                             <td> 
                                                                 <a class="btn btn-success" id="edit_modal" data-toggle="modal" data-target="#editModal" onclick="editar_registro( '{{ $producto->id }}','{{$producto->descripcion}}' )"><span class="glyphicon glyphicon-edit"></span></a> 
                                                             </td>
@@ -73,6 +71,7 @@
                                                     @endforeach
                                                     </tbody>
                                                 </table>
+                                                </div>
                                             </div>
                                         </div>  
                                     </div>            
@@ -86,6 +85,7 @@
     @else
   @include('partials.modal.mail')
   @include('partials.modal.delete')
+  @include('partials.modal.general')
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
@@ -142,7 +142,7 @@
                                 <p class="col-xs-12 col-sm-12 col-lg-12">{{ __($user[0]['email']) }}</p>
                             </div>
 
-                            {!! Form::open([ 'id' => 'form-rfc', 'method' => 'POST']) !!}
+                            {!! Form::open([ 'id' => 'form_rfc', 'method' => 'POST', 'url' => 'filtro_rfc' ]) !!}
                             <div class="form-group">
                                 <label for="name" class="col-xs-12 col-sm-6 col-lg-3" style="margin-top: 5px">{{ __('RFC') }}</label>
                                 <!-- <p class="col-xs-12 col-sm-12 col-lg-12">{{ __($user[0]['rfc']) }}</p> -->
@@ -150,8 +150,9 @@
                                 <a class="btn btn-primary" style="margin-left: 5px;" data-toggle="modal" data-target="#rfcModal">+</a>
 
                                 <select class="form-control col-xs-12 col-sm-6 col-lg-6" id="rfc" name="rfc" style="margin-left: 15px; width: 200px;">
+                                    <option value="0">Todos...</option>
                                     @foreach($rfc as $valor) 
-                                         <option value="{{ $valor->id }}">{{ $valor->rfc }}</option>
+                                         <option value="{{ $valor->id }}" {{ ( isset($rfc_active) && ( $rfc_active[0]->id === $valor->id ) ) ? 'selected' : ''  }}> {{ $valor->rfc }} </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -159,12 +160,12 @@
 
                             <div class="form-group">
                                 <label for="name" class="col-xs-12 col-sm-12 col-lg-12">{{ __('PisaPesos') }}</label>
-                                @if(isset($pisapesos))
+                                @if(isset($pisapesos) )
                                     <div class="col-xs-12 col-sm-6 col-lg-6">Total por cliente: </div>
                                     <div class="col-xs-12 col-sm-6 col-lg-6">{{ $pisapesos }}</div>
                                 @endif
                                 <div class="col-xs-12 col-sm-6 col-lg-6">Total por RFC: </div>
-                                <div class="col-xs-12 col-sm-6 col-lg-6" id="pisapesos">0.00</div>
+                                <div class="col-xs-12 col-sm-6 col-lg-6" id="pisapesos">{{  isset($pisapesos_rfc) ? $pisapesos_rfc : '0.00'  }} </div>
                             </div>
                         </div>
                     </div>
@@ -180,12 +181,12 @@
                              {!! Form::open([ 'id' => 'form-add', 'method' => 'POST', 'enctype' => 'multipart/form-data']) !!}
                                 <input type="hidden" name="_token" value="{{ csrf_token() }}"></input>
                                 <div id="mensajes"></div>
-                                <div style="text-align: center; margin-top: 50px;" id="factura_xml"> 
+                                <div style="text-align: center;" id="factura_xml">
                                     <label class="btn btn-primary" style="width: 30%; background: #2a91d6;">SUBIR FACTURA 
                                         <input type="file" id="factura-xml" name="factura-xml" style="display: none">
                                     </label><br><br>
                                     <span id="path"></span>
-                                </div><br>
+                                </div>
                                 
                                 <div style="text-align:  center;">
                                     <button type="submit" class="btn btn-primary">Enviar</button>
@@ -193,7 +194,13 @@
                                 </div>
                             {!! Form::close() !!}
 
+                            <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 30px;">
+                                     <a class="btn btn-success" id="general_modal" data-toggle="modal" data-target="#generalModal">REPORTES</a> 
+                                     <a href="docs/ManualUsuario.pdf" class="btn btn-primary" target="_blank">MANUAL USUARIO</a>
+                            </div>
+                            
                             <h2 class="title-table">Historial de facturas</h2>
+                            <div class="scrollsearch">
                             <table id="factura" class="table table-striped table-bordered table-factura" style="margin-top: 50px">
                                 <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
                                     <label>Busqueda por Receptor: </label>
@@ -222,8 +229,10 @@
                                 @endforeach
                                 </tbody>
                             </table>
+                            </div>
                             <br><br><br>
                             <h2 class="title-table">Productos aprobados</h2>
+                            <div class="scrollsearch">
                             <table id="aprobados" class="table table-striped table-bordered table-aprobados" style="margin-top: 50px">
                                  <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
                                     <label>Busqueda por descripción de producto: </label>
@@ -256,9 +265,11 @@
                                 @endforeach
                                 </tbody>
                             </table>
+                            </div>
                              <br><br><br>
                             <!-- Se muestran los productos que no existen dentro de la Base de Datos de PISA -->
                             <h2 class="title-table">Productos pendientes</h2>
+                            <div class="scrollsearch">
                             <table id="pendientes" class="table table-striped table-bordered table-pendientes" style="margin-top: 50px">
                                 <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
                                     <label>Busqueda por descripción de producto: </label>
@@ -291,10 +302,11 @@
                                 @endforeach
                                 </tbody>
                             </table>
-
+                            </div>
                             <br><br><br>
                             <!-- Se muestran los productos que no existen dentro de la Base de Datos de PISA -->
                             <h2 class="title-table">Productos NO aprobados</h2>
+                            <div class="scrollsearch">
                             <table id="no_aprobados" class="table table-striped table-bordered table-no-aprobados" style="margin-top: 50px">
                                 <div class="col-lg-12 col-md-12 col-sm-12" style="text-align: right; margin-bottom: 20px;">
                                     <label>Busqueda por descripción de producto: </label>
@@ -334,6 +346,7 @@
                                 @endforeach
                                 </tbody>
                             </table>
+                            </div>
                             <br>
 
                             <a class="btn btn-primary reporte" id="reporte" data-id="" name="reporte" style="width: 130px; margin-bottom: 30px;" data-toggle="modal" data-target="#reporteModal">REPORTE</a>
@@ -395,7 +408,7 @@
                     </div>
                     <div class="row">
                       <div class="col-lg-6 col-md-12 col-xs-12">
-                          <input class="form-control" type="text" name="daterange" id="daterange" value="01/01/2018 - 01/15/2018" />
+                          <input class="form-control" type="text" name="daterange" id="daterange" value="01/01/2018 - 31/01/2018" />
                       </div>
                       <div class="col-lg-6 col-md-12 col-xs-12">
                           <select class="form-control" id="estatus_reporte" name="estatus_reporte">
@@ -404,7 +417,18 @@
                               <option value="NO APROBADO">NO APROBADO</option>
                             </select>
                       </div>
-                    </div>            
+                    </div>  <br>
+                    <div class="row">
+                      <div class="col-md-12">Tipo:</div>
+                         <div class="col-lg-6 col-md-12 col-xs-12">
+                            <select class="form-control" id="tipo" name="tipo">
+                              <option value="pdf">PDF</option>>
+                              <option value="excel">EXCEL</option>
+                            </select>
+                        </div>
+                    </div>
+
+
                   </div>
                   <div class="modal-footer">
                         <button type="submit" class="btn btn-primary imprimir_reporte" name="imprimir_reporte" id="imprimir_reporte">Imprimir Reporte</button>

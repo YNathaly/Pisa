@@ -16,7 +16,9 @@ class Productos extends Model
                      'descuento',
                      'importe',
                  	   'valor_unitario', 
-                     'estatus','created_at','updated_at'];
+                     'validacion', 
+                     'estatus',
+                     'estatus_cliente','created_at','updated_at'];
 
 }
 

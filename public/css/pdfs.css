@@ -2,4 +2,19 @@
 
    .table_style{
 		background: #d8d4d4;
+      font-size: 11px;
+   	}
+
+   	tr td {
+   		font-size: 11px;
+   	}
+
+
+   	tr th {
+   		font-size: 12px;
+   		color: #0e0b29;
+   	}
+
+   	.upper{
+   		text-transform: uppercase;
    	}

@@ -36,13 +36,13 @@
 									<?php $__currentLoopData = $facturas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $factura): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 										<?php if( $factura['id_user'] == $usuario['id']): ?>
 					                       	<tr class="table_style">
-				                                <th>Folio</th>
-				                                <th>Subtotal</th>
-				                                <th>Total</th>
-				                                <th>Descuento</th>
-				                                <th>Moneda</th>
-				                                <th>Fecha</th>
-				                                <th></th>
+				                                <th class="upper">Folio</th>
+				                                <th class="upper">Subtotal</th>
+				                                <th class="upper">Total</th>
+				                                <th class="upper">Descuento</th>
+				                                <th class="upper">Moneda</th>
+				                                <th class="upper">Fecha</th>
+				                                <th class="upper">Pisa puntos</th>
 				                            </tr>
 				                        
 				                            <tr id="facturaRow_<?php echo e($factura['id']); ?>">
@@ -52,7 +52,23 @@
 				                                <td> <?php echo e($factura['descuento']); ?> </td>
 				                                <td> $ <?php echo e($factura['moneda']); ?> </td>
 				                                <td> <?php echo e($factura['fecha']); ?> </td>
-				                                <td></td>
+				                                <td>
+
+												<?php			                                	
+													$pisa_pesos = 0;
+												?>		                                	
+													<?php $__currentLoopData = $infoFormato; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $producto): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>          
+					                            		<?php if($factura['folio'] == $producto['folio'] && $producto['estatus'] == 'APROBADO' ): ?>
+							                           		<?php
+																
+																$pisa_pesos += $producto['importe'] ;
+							                           		?>
+									                	<?php endif; ?>
+									                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+									                	<?php echo e($pisa_pesos); ?>
+
+
+				                                </td>
 				                            </tr>
 				                            <tr class="table_style">
 				                                <th>Clave</th>
