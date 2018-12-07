@@ -168,9 +168,9 @@ class HomeController extends Controller
                         $emisor = $comprobante->xpath('//cfdi:Emisor');
                         $receptor = $comprobante->xpath('//cfdi:Receptor');
 
-                        if( $request->id_rfc == 0 ){
+                        if( $request->id_rfc == "0" ){
                           $rfc = DB::table('rfc_user')->select('id','rfc')->where('user_id', Auth::user()->id )->first();
-                          $rfc_id = $rfc['id'];
+                          $rfc_id = $rfc->id;
                         }else{
                           $rfc_id = $request->id_rfc;
                         }
@@ -207,8 +207,8 @@ class HomeController extends Controller
                                   ->first(); 
 
 
-                               if( isset( $datos ) && ( $datos['product_name'] != null ) ){
-                                  $status = $datos['product_status'];
+                               if( isset( $datos ) && ( $datos->product_name != null ) ){
+                                  $status = $datos->product_status;
                                 }else{
                                   $status = 'PENDIENTE';
                                 }
@@ -447,7 +447,6 @@ class HomeController extends Controller
 
     public function reporte_general(Request $request){
 
-    
         $rules = array(
            'daterange' => 'required|string|max:255',
            //'cliente_id' => 'required|string|max:255'
@@ -477,19 +476,18 @@ class HomeController extends Controller
                 $infoFormato = array();       
                 $facturas = array();
 
+  //var_dump( $date_from ); var_dump( $date_to );exit();
+
           $facturas = Facturas::select('*')
                    ->whereBetween('fecha', [ $date_from, $date_to ])
                    ->groupBy('facturas.id');
-
-          if( $request->cliente_id != NULL ) {
+          if( isset($request->cliente_id)  ) {
             //if( isset($request->cliente_id) && !is_null($request->cliente_id) ) {
               $facturas = $facturas->where('id_user', '=', $request->cliente_id)->get()->toArray();
-
-          }else{
+          }else if( $request->cliente_id == NULL ){
             $facturas = $facturas->get()->toArray();
           }
-          
-
+         
 
           $infoFormato = Facturas::select('facturas.id', 'facturas.id_user', 'facturas.email', 'facturas.folio', 'facturas.subtotal', 'facturas.total', 'facturas.descuento', 'facturas.moneda', 'facturas.metodo_pago', 'facturas.lugar_expedicion', 'facturas.fecha',
                     'prod.id','prod.no_identificacion', 'prod.unidad', 'prod.clave_unidad', 'prod.clave_prod_ser', 'prod.descripcion', 'prod.cantidad', 'prod.descuento', 'prod.importe', 'prod.valor_unitario', 'prod.estatus','pro_imp.base_traslado', 'pro_imp.impuesto_traslado', 'pro_imp.tipo_factor_traslado', 'pro_imp.tasa_cuota_traslado', 'pro_imp.importe_traslado')
@@ -497,22 +495,23 @@ class HomeController extends Controller
                    ->join('producto_impuestos as pro_imp', 'prod.id', '=', 'pro_imp.id_producto')
                    ->whereBetween('fecha', [ $date_from, $date_to ]);//->toSql();
 
-
           if( $request->cliente_id != NULL ) {
-              $infoFormato = $infoFormato->where('facturas.id_user', '=', $request->cliente_id)->get()->toArray();;
-          }
-          if( $request->estatus_reporte_general != 'GENERAL' ) {
-              $infoFormato = $infoFormato->where('prod.estatus', '=', $request->estatus_reporte_general )->get()->toArray();;
+              $infoFormato = $infoFormato->where('facturas.id_user', '=', $request->cliente_id);//->get()->toArray();
           }
 
-          //$infoFormato = $infoFormato->get()->toArray();
+          if( $request->estatus_reporte_general != 'GENERAL'  ) {
+              $infoFormato = $infoFormato->where('prod.estatus', '=', $request->estatus_reporte_general );//->get()->toArray();
+          }
+//var_dump( $infoFormato );exit();
 
-          $user = User::select('*')->where('role_id', '2')->get()->toArray();
+          $infoFormato = $infoFormato->get()->toArray();
+
+          $user = User::select('*')->where('role_id', '2');//->get()->toArray();
           if( $request->cliente_id != NULL ) {
               $user = $user->where('id', '=', $request->cliente_id)->get()->toArray();
+          }else{
+              $user = $user->get()->toArray();
           }
-          //$user = $user->get()->toArray();
-
             if( $request->tipo == 'pdf' ){
                $pdf = PDF::loadView('partials.pdf.general', [ 'infoFormato' => $infoFormato, 'facturas' => $facturas, 'user' => $user ]);
                 return $pdf->stream();
@@ -534,7 +533,6 @@ class HomeController extends Controller
 
             }
         }
-          
     }
 
       public function clientes(Request $request){

@@ -16,6 +16,11 @@
 		        <div class="panel-heading">INFORMACIÓN DE CLIENTE </div>
 			        <div class="col-lg-12 col-md-12 col-sm-12"> 
 			          <div><b>Nombre de cliente: </b> {{ $usuario['name'] }}</div>
+
+
+			
+
+
 			          <div><b>Dirección:</b> {{ $usuario['address'] }} <b>Colonia:</b> {{ $usuario['colonia'] }} <b>C.P.</b> {{ $usuario['postal'] }} {{ $usuario['city'] }} {{ $usuario['state'] }}</div>
 					  <div><b>Número de celular:</b> {{ $usuario['phone'] }}</div>
 					  <div><b>Correo electrónico:</b> {{ $usuario['email'] }}</div>
@@ -35,6 +40,23 @@
 			                    <table id="a_validar" class="table table-striped table-bordered a_validar">
 									@foreach($facturas as $factura)
 										@if( $factura['id_user'] == $usuario['id'])
+
+										    <table class="table table-striped table-bordered"> 
+					                           	<tr class="table_style">
+					                                <th class="upper" style="width: 25%">Nombre de Emisor:</th>
+					                                <th class="upper" style="width: 25%">RFC Emisor</th>
+					                                <th class="upper" style="width: 25%">Nombre de Receptor</th>
+					                                <th class="upper" style="width: 25%">RFC Receptor</th>
+					                            </tr>
+					                        
+					                            <tr id="facturaRow_{{ $factura['id'] }}">
+					                                <td style="width: 25%"> {{ $factura['emisor'] }}  </td>
+					                                <td style="width: 25%"> {{ $factura['rfc_emisor'] }} </td>
+					                                <td style="width: 25%"> {{ $factura['receptor'] }} </td>
+					                                <td style="width: 25%"> {{ $factura['rfc_receptor'] }} </td>
+					                            </tr>
+				                            </table>
+				                            
 					                       	<tr class="table_style">
 				                                <th class="upper">Folio</th>
 				                                <th class="upper">Subtotal</th>
@@ -69,6 +91,7 @@
 
 				                                </td>
 				                            </tr>
+
 				                            <tr class="table_style">
 				                                <th>Clave</th>
 				                                <th>Descripción</th>

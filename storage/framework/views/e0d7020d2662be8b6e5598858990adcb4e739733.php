@@ -16,6 +16,11 @@
 		        <div class="panel-heading">INFORMACIÓN DE CLIENTE </div>
 			        <div class="col-lg-12 col-md-12 col-sm-12"> 
 			          <div><b>Nombre de cliente: </b> <?php echo e($usuario['name']); ?></div>
+
+
+			
+
+
 			          <div><b>Dirección:</b> <?php echo e($usuario['address']); ?> <b>Colonia:</b> <?php echo e($usuario['colonia']); ?> <b>C.P.</b> <?php echo e($usuario['postal']); ?> <?php echo e($usuario['city']); ?> <?php echo e($usuario['state']); ?></div>
 					  <div><b>Número de celular:</b> <?php echo e($usuario['phone']); ?></div>
 					  <div><b>Correo electrónico:</b> <?php echo e($usuario['email']); ?></div>
@@ -35,6 +40,23 @@
 			                    <table id="a_validar" class="table table-striped table-bordered a_validar">
 									<?php $__currentLoopData = $facturas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $factura): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 										<?php if( $factura['id_user'] == $usuario['id']): ?>
+
+										    <table class="table table-striped table-bordered"> 
+					                           	<tr class="table_style">
+					                                <th class="upper" style="width: 25%">Nombre de Emisor:</th>
+					                                <th class="upper" style="width: 25%">RFC Emisor</th>
+					                                <th class="upper" style="width: 25%">Nombre de Receptor</th>
+					                                <th class="upper" style="width: 25%">RFC Receptor</th>
+					                            </tr>
+					                        
+					                            <tr id="facturaRow_<?php echo e($factura['id']); ?>">
+					                                <td style="width: 25%"> <?php echo e($factura['emisor']); ?>  </td>
+					                                <td style="width: 25%"> <?php echo e($factura['rfc_emisor']); ?> </td>
+					                                <td style="width: 25%"> <?php echo e($factura['receptor']); ?> </td>
+					                                <td style="width: 25%"> <?php echo e($factura['rfc_receptor']); ?> </td>
+					                            </tr>
+				                            </table>
+				                            
 					                       	<tr class="table_style">
 				                                <th class="upper">Folio</th>
 				                                <th class="upper">Subtotal</th>
@@ -70,6 +92,7 @@
 
 				                                </td>
 				                            </tr>
+
 				                            <tr class="table_style">
 				                                <th>Clave</th>
 				                                <th>Descripción</th>

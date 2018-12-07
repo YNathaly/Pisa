@@ -111,7 +111,7 @@ $(document).ready(function() {
 			},
 			statusCode: {
 			    500: function() {
-			      $('#mensajes').html('<div class="alert alert-danger">XML INVALIDO</div>'); 
+			      $('#mensajes').html('<div class="alert alert-danger">Error al hacer la conexión con consultaqr.facturaelectronica.sat.gob.mx</div>'); 
 			    }
 			  }
 		});
